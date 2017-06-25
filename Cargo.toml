@@ -1,0 +1,6 @@
+[package]
+name = "rusty_sword"
+version = "0.1.0"
+authors = ["Nathan Stocks <nathan.stocks@gmail.com>"]
+
+[dependencies]
