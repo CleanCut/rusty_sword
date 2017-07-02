@@ -4,3 +4,4 @@ version = "0.1.0"
 authors = ["Nathan Stocks <nathan.stocks@gmail.com>"]
 
 [dependencies]
+termion = "1.4"

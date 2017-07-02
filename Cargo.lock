@@ -1,0 +1,23 @@
+[root]
+name = "rusty_sword"
+version = "0.1.0"
+dependencies = [
+ "termion 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[[package]]
+name = "libc"
+version = "0.2.24"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+
+[[package]]
+name = "termion"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+dependencies = [
+ "libc 0.2.24 (registry+https://github.com/rust-lang/crates.io-index)",
+]
+
+[metadata]
+"checksum libc 0.2.24 (registry+https://github.com/rust-lang/crates.io-index)" = "38f5c2b18a287cf78b4097db62e20f43cace381dc76ae5c0a3073067f78b7ddc"
+"checksum termion 1.4.0 (registry+https://github.com/rust-lang/crates.io-index)" = "9105678ba52491a8e38e67be7842435ac44d7797b9b05bcdad370b0c84559615"
