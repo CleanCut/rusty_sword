@@ -1,3 +1,4 @@
+#[derive(Clone, Copy)]
 pub struct Coord {
     pub col : u16,
     pub row : u16,
