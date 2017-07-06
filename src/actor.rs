@@ -1,9 +1,6 @@
 use primitive::*;
-<<<<<<< HEAD
 use timer::*;
-=======
 use world::*;
->>>>>>> 71f9fb5189a1fa54d282d10c7c856f50a504fd0c
 
 use std::time::Duration;
 use std::sync::*;
