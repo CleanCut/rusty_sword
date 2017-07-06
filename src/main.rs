@@ -24,7 +24,9 @@ fn main() {
             }));
     {
         let world = world_arc.lock().unwrap();
-        world.add_actor(Box::new(Monster::new(Coord { col: 20, row: 20} })))
+        world.show_message("Welcome to: Rusty Sword – Game of Infamy!".to_string());
+        world.add_actor(Box::new(Monster::new(Coord { col: 20, row: 20} })));
+    }
     let stop = Arc::new(Mutex::new(false));
 
     let (dirty_coord_tx, dirty_coord_rx) = mpsc::channel::<Coord>();
@@ -50,11 +52,6 @@ fn main() {
         let stop = stop.clone();
         thread::spawn(move || { game_loop(world, stop) })
     };
-
-    {
-        let mut world = world_arc.lock().unwrap();
-        world.show_message("Welcome to: Rusty Sword – Game of Infamy!".to_string())
-    }
 
     // Wait for other threads to stop before exiting
     render_thread.join().unwrap();
