@@ -20,7 +20,7 @@ fn main() {
                     Box::new(Monster { _coord: Coord { col: 20, row: 20} }),
                 ],
                 dirty_coords: Vec::<Coord>::new(),
-                player: Box::new(Player { _coord: Coord { col: 1, row: 1} }),
+                player: Box::new(Player::new(1, 1)),
                 messages: Vec::<String>::new(),
             }));
     let stop = Arc::new(Mutex::new(false));

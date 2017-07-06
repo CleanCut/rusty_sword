@@ -1,4 +1,5 @@
 use primitive::*;
+use timer::*;
 
 use std::time::Duration;
 
@@ -14,6 +15,16 @@ pub trait Actor {
 // PLAYER
 pub struct Player {
    pub _coord : Coord,
+   move_timer : Timer,
+}
+
+impl Player {
+    pub fn new(col : u16, row : u16) -> Self {
+        Player {
+            _coord : Coord { col, row },
+            move_timer : Timer::from_millis(300),
+        }
+    }
 }
 
 impl Actor for Player {
@@ -24,7 +35,7 @@ impl Actor for Player {
         self._coord = *coord;
     }
     fn update(&mut self, delta : Duration) {
-        // XXX
+        self.move_timer.update(delta);
     }
 }
 

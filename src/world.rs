@@ -1,6 +1,9 @@
 use actor::*;
 use floor::*;
 use primitive::*;
+use timer::*;
+
+use std::time::Duration;
 
 pub struct World {
     pub floors : Vec<Floor>,
@@ -16,6 +19,10 @@ impl World {
         if self.messages.len() > 4 {
             self.messages.pop();
         }
+    }
+
+    pub fn update(&mut self, delta : Duration) {
+       self.player.update(delta); 
     }
 }
 
