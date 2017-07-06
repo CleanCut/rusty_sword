@@ -19,7 +19,6 @@ fn main() {
                 actors: vec![
                 ],
                 dirty_coords: Vec::<Coord>::new(),
-                player: Player { _coord: Coord { col: 1, row: 1} },
                 messages: Vec::<String>::new(),
             }));
     {

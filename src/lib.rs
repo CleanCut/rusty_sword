@@ -6,6 +6,7 @@ pub mod game;
 pub mod input;
 pub mod primitive;
 pub mod render;
+pub mod timer;
 pub mod world;
 
 
