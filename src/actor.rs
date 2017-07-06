@@ -1,6 +1,8 @@
 use primitive::*;
+use world::*;
 
 use std::time::Duration;
+use std::sync::*;
 
 pub trait Actor {
     fn name(&self) -> &str;
@@ -13,35 +15,61 @@ pub trait Actor {
 
 // PLAYER
 pub struct Player {
-   pub _coord : Coord,
+   coord : Coord,
+   world : Arc<Mutex<World>>,
+}
+
+impl Player {
+    fn new(coord : Coord, world : Arc<Mutex<World>>) -> Self {
+        Self {
+            coord: coord,
+            world: world,
+        }
+    }
+    pub fn handle_input(&mut self, keypress : &char, dirty_coord_tx : &mut mpsc::Sender<Coord>) {
+        match *keypress {
+            'd'|'e' => {
+                dirty_coord_tx.send(self.coord.clone());
+                //self._coord.col = clamp(self._coord.col + 1, 0, ;
+            },
+            _ => {},
+        }
+    }
 }
 
 impl Actor for Player {
     fn name(&self) -> &str { "Rusty Sword!" }
     fn symbol(&self) -> &str { "†" } // U-2020
-    fn coord(&self) -> &Coord { &self._coord }
+    fn coord(&self) -> &Coord { &self.coord }
     fn set_coord(&mut self, coord : &Coord) {
-        self._coord = *coord;
+        self.coord = *coord;
     }
-    fn update(&mut self, delta : Duration) {
-        // XXX
-    }
+    fn update(&mut self, delta : Duration) { /* XXX */ }
 }
 
 // MONSTER
 pub struct Monster {
-   pub _coord : Coord,
+   coord : Coord,
+   world : Arc<Mutex<World>>,
+}
+
+impl Monster {
+    fn new(coord : Coord, world : Arc<Mutex<World>>) -> Self {
+        Self {
+            coord: coord,
+            world: world,
+        }
+    }
 }
 
 impl Actor for Monster {
     fn name(&self) -> &str { "Rusty Sword!" }
     fn symbol(&self) -> &str { "X" } // U-2020
-    fn coord(&self) -> &Coord { &self._coord }
+    fn coord(&self) -> &Coord { &self.coord }
     fn set_coord(&mut self, coord : &Coord) {
-        self._coord.col = coord.col;
-        self._coord.row = coord.row;
+        self.coord = *coord;
     }
-    fn update(&mut self, delta : Duration) {}
+    fn update(&mut self, delta : Duration) { /* XXX */ }
 }
 
 

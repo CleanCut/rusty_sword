@@ -1,3 +1,5 @@
+use primitive::*;
+
 #[derive(Clone)]
 pub struct Tile {
     pub wall : Option<String>,
@@ -21,7 +23,7 @@ pub struct Floor {
 }
 
 impl Floor {
-    pub fn new<T: ToString>(name : T, rows : usize, cols : usize) -> Self {
+    pub fn new<T: ToString>(name : T, cols : usize, rows : usize) -> Self {
         // Tiles to use
         let horizontal   = Tile::new(Some("─")); // U-2500
         let vertical     = Tile::new(Some("│")); // U-2502
@@ -63,6 +65,13 @@ impl Floor {
             rows: rows,
             cols: cols,
             tiles: tiles,
+        }
+    }
+    pub fn get_symbol(&self, coord : &Coord) -> String {
+        if let Some(ref wall) = self.tiles[coord.row as usize][coord.col as usize].wall {
+            wall.clone()
+        } else {
+            " ".to_string()
         }
     }
 }

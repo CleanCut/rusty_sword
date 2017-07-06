@@ -3,11 +3,12 @@ use floor::*;
 use primitive::*;
 
 pub struct World {
-    pub floors : Vec<Floor>,
-    pub actors : Vec<Box<Actor + Send>>,
+    pub floor : Floor,
     pub dirty_coords : Vec<Coord>,
-    pub player : Box<Actor + Send>,
     pub messages : Vec<String>,
+    pub actors : Vec<Weak<Actor + Send>>,
+    pub player : Arc<Player>,
+    pub monsters : Arc<Monster>,
 }
 
 impl World {

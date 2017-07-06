@@ -30,18 +30,12 @@ fn render_floor<W : Write>(screen : &mut W, floor: &Floor) {
     }
 }
 
-fn render_actor<W : Write>(screen : &mut W, actor : &Box<Actor + Send>) {
-    write!(screen, "{}", goto_cursor_coord(actor.coord())).unwrap();
-    write!(screen, "{}", actor.symbol()).unwrap();
-}
-
 fn goto_cursor_coord(coord : &Coord) -> termion::cursor::Goto {
     // Coordinate translation naively assumes floor is being rendered at 1,1
     termion::cursor::Goto(coord.col+1, coord.row+1)
 }
 
-
-pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>) {
+pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dirty_coord_rx : mpsc::Receiver<Coord>) {
     let mut screen = MouseTerminal::from(stdout().into_raw_mode().unwrap());
     // Hide the cursor, clear the screen
     write!(screen, "{}{}", termion::cursor::Hide, termion::clear::All).unwrap();
@@ -49,7 +43,7 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>) {
     {
         write!(screen, "{}", termion::cursor::Goto(1, 1)).unwrap();
         let world = world_mutex.lock().unwrap();
-        render_floor(&mut screen, &world.floors[0]);
+        render_floor(&mut screen, &world.floor);
     }
 
     // Render Loop
@@ -60,18 +54,26 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>) {
             break;
         }
 
-        // Get access to the world
         let world = world_mutex.lock().unwrap();
 
-        // Render Actors
-        render_actor(&mut screen, &world.player); // Player
+        // Redraw any dirty world coordinates
+        while let Ok(coord) = dirty_coord_rx.try_recv() {
+            write!(screen, "{}{}", goto_cursor_coord(&coord), world.floor.get_symbol(&coord));
+        }
+
+        // Render Player
+        write!(screen, "{}", goto_cursor_coord(&world.player.coord())).unwrap();
+        write!(screen, "{}", &world.player.symbol()).unwrap();
+
+        // Render other actors
         for actor in &world.actors {
-            render_actor(&mut screen, &actor); // Others
+            write!(screen, "{}", goto_cursor_coord(actor.coord())).unwrap();
+            write!(screen, "{}", actor.symbol()).unwrap();
         }
 
         // Bottom text
-        write!(screen, "{}", termion::cursor::Goto(1, (world.floors[0].rows+1) as u16)).unwrap();
-        write!(screen, "{}\n\r\n\r", world.floors[0].name).unwrap(); // Dungeon Name
+        write!(screen, "{}", termion::cursor::Goto(1, (world.floor.rows+1) as u16)).unwrap();
+        write!(screen, "{}\n\r\n\r", world.floor.name).unwrap(); // Dungeon Name
         for msg in &world.messages {
             write!(screen, "{}{}", color::Fg(color::LightWhite), msg).unwrap();
             write!(screen, "{}{}\n\r", color::Fg(color::Reset), clear::UntilNewline).unwrap();
@@ -85,7 +87,7 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>) {
 
     // Nice cleanup: Move cursor below the world, so we can see how we finished
     let world = world_mutex.lock().unwrap();
-    write!(screen, "{}", goto_cursor_coord(&Coord::at(0, (world.floors[0].rows+7) as u16))).unwrap();
+    write!(screen, "{}", goto_cursor_coord(&Coord::at(0, (world.floor.rows+7) as u16))).unwrap();
     print!("{}", termion::cursor::Show);
     screen.flush().unwrap();
 }
