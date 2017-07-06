@@ -13,41 +13,45 @@ use rusty_sword::input::input_loop;
 use rusty_sword::game::game_loop;
 
 fn main() {
-    let world = Arc::new(Mutex::new(
+    let world_arc = Arc::new(Mutex::new(
             World {
-                floors: vec![Floor::new("Dungeon Level 1", 30, 60)],
+                floor: Floor::new("Dungeon Level 1", 60, 30),
                 actors: vec![
-                    Box::new(Monster { _coord: Coord { col: 20, row: 20} }),
                 ],
                 dirty_coords: Vec::<Coord>::new(),
-                player: Box::new(Player::new(1, 1)),
                 messages: Vec::<String>::new(),
             }));
+    {
+        let world = world_arc.lock().unwrap();
+        world.add_actor(Box::new(Monster::new(Coord { col: 20, row: 20} })))
     let stop = Arc::new(Mutex::new(false));
+
+    let (dirty_coord_tx, dirty_coord_rx) = mpsc::channel::<Coord>();
 
     // Render Thread
     let render_thread = {
-        let world = world.clone();
+        let world = world_arc.clone();
         let stop = stop.clone();
-        thread::spawn(move || { render_loop(world, stop) })
+        thread::spawn(move || { render_loop(world, stop, dirty_coord_rx) })
     };
 
     // Input Thread
+    let dirty_coord_tx2 = dirty_coord_tx.clone();
     let input_thread = {
-        let world = world.clone();
+        let world = world_arc.clone();
         let stop = stop.clone();
-        thread::spawn(move || { input_loop(world, stop) })
+        thread::spawn(move || { input_loop(world, stop, dirty_coord_tx2) })
     };
 
     // Game Thread
     let game_thread = {
-        let world = world.clone();
+        let world = world_arc.clone();
         let stop = stop.clone();
         thread::spawn(move || { game_loop(world, stop) })
     };
 
     {
-        let mut world = world.lock().unwrap();
+        let mut world = world_arc.lock().unwrap();
         world.show_message("Welcome to: Rusty Sword – Game of Infamy!".to_string())
     }
 

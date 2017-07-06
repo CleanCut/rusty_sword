@@ -14,4 +14,6 @@ impl Coord {
 }
 
 
-
+pub fn clamp(x : u16, min : u16, max : u16) -> u16 {
+    if x < min { min } else if x > max { max } else { x }
+}

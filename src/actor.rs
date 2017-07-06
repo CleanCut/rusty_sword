@@ -1,7 +1,12 @@
 use primitive::*;
+<<<<<<< HEAD
 use timer::*;
+=======
+use world::*;
+>>>>>>> 71f9fb5189a1fa54d282d10c7c856f50a504fd0c
 
 use std::time::Duration;
+use std::sync::*;
 
 pub trait Actor {
     fn name(&self) -> &str;
@@ -14,15 +19,25 @@ pub trait Actor {
 
 // PLAYER
 pub struct Player {
-   pub _coord : Coord,
+   coord : Coord,
    move_timer : Timer,
+   world : Arc<Mutex<World>>,
 }
 
 impl Player {
-    pub fn new(col : u16, row : u16) -> Self {
-        Player {
-            _coord : Coord { col, row },
-            move_timer : Timer::from_millis(300),
+    fn new(coord : Coord, world : Arc<Mutex<World>>) -> Self {
+        Self {
+            coord: coord,
+            world: world,
+        }
+    }
+    pub fn handle_input(&mut self, keypress : &char, dirty_coord_tx : &mut mpsc::Sender<Coord>) {
+        match *keypress {
+            'd'|'e' => {
+                dirty_coord_tx.send(self.coord.clone());
+                //self._coord.col = clamp(self._coord.col + 1, 0, ;
+            },
+            _ => {},
         }
     }
 }
@@ -30,29 +45,38 @@ impl Player {
 impl Actor for Player {
     fn name(&self) -> &str { "Rusty Sword!" }
     fn symbol(&self) -> &str { "†" } // U-2020
-    fn coord(&self) -> &Coord { &self._coord }
+    fn coord(&self) -> &Coord { &self.coord }
     fn set_coord(&mut self, coord : &Coord) {
-        self._coord = *coord;
+        self.coord = *coord;
     }
-    fn update(&mut self, delta : Duration) {
+    fn update(&mut self, delta : Duration) { 
         self.move_timer.update(delta);
     }
 }
 
 // MONSTER
 pub struct Monster {
-   pub _coord : Coord,
+   coord : Coord,
+   world : Arc<Mutex<World>>,
+}
+
+impl Monster {
+    fn new(coord : Coord, world : Arc<Mutex<World>>) -> Self {
+        Self {
+            coord: coord,
+            world: world,
+        }
+    }
 }
 
 impl Actor for Monster {
     fn name(&self) -> &str { "Rusty Sword!" }
     fn symbol(&self) -> &str { "X" } // U-2020
-    fn coord(&self) -> &Coord { &self._coord }
+    fn coord(&self) -> &Coord { &self.coord }
     fn set_coord(&mut self, coord : &Coord) {
-        self._coord.col = coord.col;
-        self._coord.row = coord.row;
+        self.coord = *coord;
     }
-    fn update(&mut self, delta : Duration) {}
+    fn update(&mut self, delta : Duration) { /* XXX */ }
 }
 
 
