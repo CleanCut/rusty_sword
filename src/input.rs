@@ -25,7 +25,7 @@ pub fn input_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, mut 
                             Key::Char('q')|Key::Esc => break 'outer,
                             Key::Char(ch) => {
                                 let mut world = world_mutex.lock().unwrap();
-                                world.player.handle_input(&ch, &mut dirty_coord_tx);
+                                world.players[0].handle_input(&ch, &mut dirty_coord_tx);
                             },
                             _ => {},
                         }

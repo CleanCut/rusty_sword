@@ -2,6 +2,7 @@ use std::sync::*;
 use std::time::*;
 use std::thread;
 
+use actor::*;
 use world::*;
 
 
@@ -17,7 +18,7 @@ pub fn game_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>) {
         let current_instant = Instant::now();
         let delta = current_instant - last_instant;
 
-        world.player.update(delta);
+        world.players[0].update(delta);
 
         last_instant = current_instant;
         thread::sleep(Duration::from_millis(10));

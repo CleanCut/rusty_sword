@@ -1,5 +1,4 @@
 use primitive::*;
-use timer::*;
 use world::*;
 
 use std::time::Duration;
@@ -17,12 +16,11 @@ pub trait Actor {
 // PLAYER
 pub struct Player {
    coord : Coord,
-   move_timer : Timer,
-   world : Arc<Mutex<World>>,
+   world : Weak<Mutex<World>>,
 }
 
 impl Player {
-    fn new(coord : Coord, world : Arc<Mutex<World>>) -> Self {
+    pub fn new(coord : Coord, world : Weak<Mutex<World>>) -> Self {
         Self {
             coord: coord,
             world: world,
@@ -46,19 +44,17 @@ impl Actor for Player {
     fn set_coord(&mut self, coord : &Coord) {
         self.coord = *coord;
     }
-    fn update(&mut self, delta : Duration) { 
-        self.move_timer.update(delta);
-    }
+    fn update(&mut self, delta : Duration) { }
 }
 
 // MONSTER
 pub struct Monster {
    coord : Coord,
-   world : Arc<Mutex<World>>,
+   world : Weak<Mutex<World>>,
 }
 
 impl Monster {
-    fn new(coord : Coord, world : Arc<Mutex<World>>) -> Self {
+    fn new(coord : Coord, world : Weak<Mutex<World>>) -> Self {
         Self {
             coord: coord,
             world: world,

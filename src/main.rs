@@ -4,28 +4,16 @@ extern crate termion;
 use std::sync::*;
 use std::thread;
 
-use rusty_sword::floor::Floor;
-use rusty_sword::actor::{Monster, Player};
-use rusty_sword::primitive::Coord;
-use rusty_sword::world::World;
-use rusty_sword::render::render_loop;
-use rusty_sword::input::input_loop;
-use rusty_sword::game::game_loop;
+use rusty_sword::game::*;
+use rusty_sword::input::*;
+use rusty_sword::primitive::*;
+use rusty_sword::render::*;
+use rusty_sword::world::*;
 
 fn main() {
-    let world_arc = Arc::new(Mutex::new(
-            World {
-                floor: Floor::new("Dungeon Level 1", 60, 30),
-                actors: vec![
-                ],
-                dirty_coords: Vec::<Coord>::new(),
-                messages: Vec::<String>::new(),
-            }));
-    {
-        let world = world_arc.lock().unwrap();
-        world.show_message("Welcome to: Rusty Sword – Game of Infamy!".to_string());
-        world.add_actor(Box::new(Monster::new(Coord { col: 20, row: 20} })));
-    }
+    let world_arc = Arc::new(Mutex::new(World::new(60, 30)));
+    World::new_player(&world_arc);
+
     let stop = Arc::new(Mutex::new(false));
 
     let (dirty_coord_tx, dirty_coord_rx) = mpsc::channel::<Coord>();
