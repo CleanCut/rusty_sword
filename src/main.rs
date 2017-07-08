@@ -13,7 +13,7 @@ use rusty_sword::render::*;
 use rusty_sword::world::*;
 
 fn main() {
-    let world = Arc::new(Mutex::new(World::new(60, 30)));
+    let world = Arc::new(Mutex::new(World::new()));
 
     let stop = Arc::new(Mutex::new(false));
 
@@ -35,7 +35,7 @@ fn main() {
         thread::spawn(move || { input_loop(world, stop, input_tx) })
     };
 
-    //////////////////////////////////////////////////
+    //-------------------------------------------------------------------------
     // Game Loop
     let mut last_instant = Instant::now();
     'game: loop {
@@ -63,12 +63,11 @@ fn main() {
             }
         }
 
-        let mut world = world.lock().unwrap();
-        world.player.update(delta);
 
         last_instant = current_instant;
         thread::sleep(Duration::from_millis(10));
     }
+    // End game loop
 
     // Wait for other threads to stop before exiting
     render_thread.join().unwrap();

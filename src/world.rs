@@ -13,9 +13,9 @@ pub struct World {
 }
 
 impl World {
-    pub fn new(cols : usize, rows : usize) -> Self {
+    pub fn new() -> Self {
         Self {
-            floor: Floor::new("Dungeon Level 1", cols, rows),
+            floor: Floor::new("Dungeon Level 1", WORLD_COLS, WORLD_ROWS),
             dirty_coords: Vec::<Coord>::new(),
             messages: vec!["Welcome to: Rusty Sword – Game of Infamy!".to_string()],
             player : Player::new(Coord {col: 1, row: 1}),
@@ -30,7 +30,6 @@ impl World {
     }
 
     pub fn update(&mut self, delta : Duration) {
-       self.player.update(delta);
     }
 }
 

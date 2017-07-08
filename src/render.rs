@@ -5,6 +5,7 @@ use termion::clear;
 use termion::color;
 use termion::input::MouseTerminal;
 
+use actor::*;
 use floor::*;
 use world::*;
 use primitive::*;
@@ -64,13 +65,16 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dir
         }
 
         // Render Player
-        write!(screen, "{}", goto_cursor_coord(&world.player.coord())).unwrap();
-        write!(screen, "{}", &world.player.symbol()).unwrap();
+        write!(screen, "{}", goto_cursor_coord(&world.player.coord)).unwrap();
+        write!(screen, "{}", &world.player.symbol).unwrap();
+        // Player's sword
+        write!(screen, "{}", goto_cursor_coord(&world.player.sword_coord)).unwrap();
+        write!(screen, "{}", &sword_symbol(&world.player.facing)).unwrap();
 
         // Render Monsters
         for monster in &world.monsters {
-            write!(screen, "{}", goto_cursor_coord(monster.coord())).unwrap();
-            write!(screen, "{}", monster.symbol()).unwrap();
+            write!(screen, "{}", goto_cursor_coord(&monster.coord)).unwrap();
+            write!(screen, "{}", &monster.symbol).unwrap();
         }
 
         // Bottom text
