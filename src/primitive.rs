@@ -1,3 +1,22 @@
+use self::Direction::*;
+
+pub enum Direction {
+    Up,
+    Down,
+    Left,
+    Right,
+}
+
+pub fn char_to_direction(ch : char) -> Option<Direction> {
+    match ch {
+        'w'|',' => Some(Up),
+        's'|'o' => Some(Down),
+        'a'     => Some(Left),
+        'd'|'e' => Some(Right),
+        _       => None
+    }
+}
+
 #[derive(Clone, Copy)]
 pub struct Coord {
     pub col : u16,

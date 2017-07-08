@@ -64,8 +64,8 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dir
         }
 
         // Render Player
-        write!(screen, "{}", goto_cursor_coord(&world.players[0].coord())).unwrap();
-        write!(screen, "{}", &world.players[0].symbol()).unwrap();
+        write!(screen, "{}", goto_cursor_coord(&world.player.coord())).unwrap();
+        write!(screen, "{}", &world.player.symbol()).unwrap();
 
         // Render Monsters
         for monster in &world.monsters {

@@ -15,7 +15,6 @@ use rusty_sword::world::*;
 
 fn main() {
     let world = Arc::new(Mutex::new(World::new(60, 30)));
-    World::new_player(&world);
 
     let stop = Arc::new(Mutex::new(false));
 
@@ -63,7 +62,7 @@ fn main() {
         }
 
         let mut world = world.lock().unwrap();
-        world.players[0].update(delta);
+        world.player.update(delta);
 
         last_instant = current_instant;
         thread::sleep(Duration::from_millis(10));
