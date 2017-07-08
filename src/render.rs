@@ -5,7 +5,6 @@ use termion::clear;
 use termion::color;
 use termion::input::MouseTerminal;
 
-use actor::*;
 use floor::*;
 use world::*;
 use primitive::*;
@@ -30,7 +29,7 @@ fn render_floor<W : Write>(screen : &mut W, floor: &Floor) {
     }
 }
 
-fn goto_cursor_coord(coord : Coord) -> termion::cursor::Goto {
+fn goto_cursor_coord(coord : &Coord) -> termion::cursor::Goto {
     // Coordinate translation naively assumes floor is being rendered at 1,1
     termion::cursor::Goto(coord.col+1, coord.row+1)
 }
@@ -61,11 +60,11 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dir
 
         // Redraw any dirty world coordinates
         while let Ok(coord) = dirty_coord_rx.try_recv() {
-            write!(screen, "{}{}", goto_cursor_coord(coord), world.floor.get_symbol(&coord)).unwrap();
+            write!(screen, "{}{}", goto_cursor_coord(&coord), world.floor.get_symbol(&coord)).unwrap();
         }
 
         // Render Player
-        write!(screen, "{}", goto_cursor_coord(world.player.coord())).unwrap();
+        write!(screen, "{}", goto_cursor_coord(&world.player.coord())).unwrap();
         write!(screen, "{}", &world.player.symbol()).unwrap();
 
         // Render Monsters
@@ -85,13 +84,13 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dir
         screen.flush().unwrap();
 
         // Don't render too hot.
-        thread::sleep(Duration::from_millis(50));
+        thread::sleep(Duration::from_millis(10));
     }
 
     // Nice cleanup: Move cursor below the world, so we can see how we finished
     {
         let world = world_mutex.lock().unwrap();
-        write!(screen, "{}", goto_cursor_coord(Coord { col: 0, row: (world.floor.rows+7) as u16})).unwrap();
+        write!(screen, "{}", goto_cursor_coord(&Coord { col: 0, row: (world.floor.rows+7) as u16})).unwrap();
     }
     print!("{}", termion::cursor::Show);
     screen.flush().unwrap();

@@ -7,7 +7,6 @@ use std::time::*;
 
 use termion::event::*;
 
-use rusty_sword::actor::*;
 use rusty_sword::input::*;
 use rusty_sword::primitive::*;
 use rusty_sword::render::*;
@@ -54,6 +53,9 @@ fn main() {
             match key {
                 Key::Char('q') => break 'game,
                 Key::Char(ch) => {
+                    //match ch {
+                    //    'a' =>
+                    //}
                     let mut world = world.lock().unwrap();
                     world.show_message(ch.to_string());
                 },

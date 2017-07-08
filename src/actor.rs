@@ -1,15 +1,12 @@
-use primitive::*;
-
-use std::collections::*;
 use std::time::Duration;
-use std::sync::*;
+
+use primitive::*;
+use primitive::Direction::*;
 
 // PLAYER
 pub struct Player {
    coord : Coord,
 }
-
-use primitive::Direction::*;
 
 pub fn sword_symbol(direction : Direction) -> String{
     match direction {
@@ -24,15 +21,6 @@ impl Player {
     pub fn new(coord : Coord) -> Self {
         Self {
             coord: coord,
-        }
-    }
-    pub fn handle_input(&mut self, keypress : &char, dirty_coord_tx : &mut mpsc::Sender<Coord>) {
-        match *keypress {
-            'd'|'e' => {
-                dirty_coord_tx.send(self.coord.clone());
-                //self._coord.col = clamp(self._coord.col + 1, 0, ;
-            },
-            _ => {},
         }
     }
     pub fn name(&self) -> &str { "Rusty Sword!" }

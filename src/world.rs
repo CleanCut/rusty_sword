@@ -2,7 +2,6 @@ use actor::*;
 use floor::*;
 use primitive::*;
 
-use std::sync::*;
 use std::time::Duration;
 
 pub struct World {

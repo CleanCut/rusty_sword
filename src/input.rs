@@ -7,7 +7,6 @@ use termion::event::*;
 use termion::input::TermRead;
 
 use world::*;
-use primitive::*;
 
 
 pub fn input_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, input_tx : mpsc::Sender<Key> ) {
@@ -25,7 +24,7 @@ pub fn input_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, inpu
                     break;
                 },
                 Event::Key(k) => {
-                    input_tx.send(k);
+                    if let Err(_) = input_tx.send(k) {}
                 },
                 _ => {},
             }
