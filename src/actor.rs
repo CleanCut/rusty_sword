@@ -1,6 +1,10 @@
+extern crate rand;
+//use rand::Rng;
+use self::rand::{Rng, sample};
+
 use floor::*;
 use primitive::*;
-use primitive::Direction::*;
+use timer::*;
 
 pub fn sword_symbol(direction : &Direction) -> String {
     match *direction {
@@ -23,8 +27,8 @@ pub struct Player {
 impl Player {
     pub fn new(coord : Coord) -> Self {
         Self {
-            coord: coord,
-            facing: Right,
+            coord : coord,
+            facing : Right,
             sword_coord : coord.to_the(Right),
             symbol : String::from("ℎ"), // U-210e
             dirty : true,
@@ -54,4 +58,24 @@ impl Player {
 pub struct Monster {
     pub coord : Coord,
     pub symbol : String,
+    pub move_timer : Timer,
+}
+
+impl Monster {
+    pub fn new(coord : Coord, mut rng : &mut Rng) -> Self {
+        let monster_symbols = vec![
+            "⟟", // U-27df
+            "⟠", // U-27e0
+            "♄", // U-2744
+            "☥", // U-2625
+            "❚", // U-275a
+            "☨", // U-2628
+            "·", // U-00b7
+        ];
+        Self {
+            coord : coord,
+            symbol : sample(&mut rng, monster_symbols, 1)[0].to_string(),
+            move_timer : Timer::from_millis(sample(&mut rng, 500..1500, 1)[0]),
+        }
+    }
 }

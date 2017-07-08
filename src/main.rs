@@ -1,3 +1,4 @@
+extern crate rand;
 extern crate rusty_sword;
 extern crate termion;
 
@@ -14,14 +15,16 @@ use rusty_sword::primitive::*;
 use rusty_sword::render::*;
 
 fn main() {
+    let mut rng = rand::thread_rng();
+
     // To avoid lock contention for this group of objects, we'll follow the rule:
     // - You must have a lock on floor before trying to lock anything else
     // - You must not keep any locks when floor gets unlocked
     let floor        = Arc::new(Mutex::new(Floor::new("Dungeon Level 1", 60, 30)));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
     let messages     = Arc::new(Mutex::new(vec!["Welcome to: Rusty Sword – Game of Infamy!".to_string()]));
-    let player       = Arc::new(Mutex::new(Player::new(Coord {col: 1, row: 1})));
-    let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
+    let player       = Arc::new(Mutex::new(Player::new(Coord {col: 5, row: 1})));
+    let monsters     = Arc::new(Mutex::new(vec![Monster::new(Coord {col: 1, row: 1}, &mut rng)]));
 
     // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
     // - stop should be locked and released when no other objects are locked

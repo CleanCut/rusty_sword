@@ -1,4 +1,4 @@
-use self::Direction::*;
+pub use self::Direction::*;
 
 #[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Direction {
@@ -7,6 +7,7 @@ pub enum Direction {
     Left,
     Right,
 }
+
 
 pub fn char_to_direction(ch : char) -> Option<Direction> {
     match ch {

@@ -15,7 +15,7 @@ pub fn input_loop(stop : Arc<Mutex<bool>>, input_tx : mpsc::Sender<Key> ) {
         if let Ok(event) = c.unwrap() {
             match event {
                 // Stop the game?
-                Event::Key(Key::Esc) => {
+                Event::Key(Key::Char('q'))|Event::Key(Key::Esc) => {
                     *stop.lock().unwrap() = true;
                     break;
                 },

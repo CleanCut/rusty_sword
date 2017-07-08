@@ -14,20 +14,6 @@ use std::sync::*;
 use std::thread;
 use std::time::Duration;
 
-fn render_floor<W : Write>(screen : &mut W, floor: &Floor) {
-    for row in &floor.tiles {
-        let mut line = String::new();
-        for tile in row {
-            if let Some(ref wall) = tile.wall {
-                line.push_str(wall);
-            } else {
-                line.push_str(" "); // U-2027
-                //line.push_str("‧"); // U-2027
-            }
-        }
-        write!(screen, "{}\n\r", line).unwrap(); // U-2502
-    }
-}
 
 fn goto_cursor_coord(coord : &Coord) -> termion::cursor::Goto {
     // Coordinate translation naively assumes floor is being rendered at 1,1
@@ -46,10 +32,19 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
     // Hide the cursor, clear the screen
     write!(screen, "{}{}", termion::cursor::Hide, termion::clear::All).unwrap();
 
+    write!(screen, "{}", termion::cursor::Goto(1, 1)).unwrap();
     {
-        write!(screen, "{}", termion::cursor::Goto(1, 1)).unwrap();
         let floor = floor.lock().unwrap();
-        render_floor(&mut screen, &floor);
+        for row in &floor.tiles {
+            for tile in row {
+                if let Some(ref wall) = tile.wall {
+                    write!(screen, "{}", wall).unwrap();
+                } else {
+                    write!(screen, " ").unwrap();
+                }
+            }
+            write!(screen, "\r\n").unwrap();
+        }
     }
 
     // Render Loop
