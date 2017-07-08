@@ -10,47 +10,27 @@ use world::*;
 use primitive::*;
 
 
-pub fn input_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, mut dirty_coord_tx : mpsc::Sender<Coord>) {
+pub fn input_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, input_tx : mpsc::Sender<Key> ) {
 
     let stdin = stdin();
     let mut stdin_events = stdin.events();
-    'outer: loop {
-        // Handle input
-        loop {
-            let c = stdin_events.next();
-            if let Ok(event) = c.unwrap() {
-                match event {
-                    Event::Key(k_event) => {
-                        match k_event {
-                            Key::Char('q')|Key::Esc => break 'outer,
-                            Key::Char(ch) => {
-                                let mut world = world_mutex.lock().unwrap();
-                                world.players[0].handle_input(&ch, &mut dirty_coord_tx);
-                            },
-                            _ => {},
-                        }
-                    }
-                    Event::Mouse(m_event) => {
-                        match m_event {
-                            MouseEvent::Press(_, col, row) => {
-                                let mut world = world_mutex.lock().unwrap();
-                                world.show_message(format!("Mouse at {}, {}", col, row));
-                            },
-                            _ => {},
-                        }
-                    }
-                    _ => {},
-                }
-            } else {
-                break;
+    loop {
+        let c = stdin_events.next();
+        if let Ok(event) = c.unwrap() {
+            match event {
+                // Stop the game?
+                Event::Key(Key::Char('q'))|Event::Key(Key::Esc) => {
+                    let mut stop_value = stop.lock().unwrap();
+                    *stop_value = true;
+                    break;
+                },
+                Event::Key(k) => {
+                    input_tx.send(k);
+                },
+                _ => {},
             }
         }
         thread::sleep(Duration::from_millis(10));
     }
 
-    // Signal other threads to stop
-    {
-        let mut stop_value = stop.lock().unwrap();
-        *stop_value = true;
-    }
 }

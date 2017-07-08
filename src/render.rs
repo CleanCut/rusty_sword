@@ -49,9 +49,11 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dir
     // Render Loop
     loop {
         // Time to stop?
-        let stop = stop.lock().unwrap();
-        if *stop {
-            break;
+        {
+            let stop = stop.lock().unwrap();
+            if *stop {
+                break;
+            }
         }
 
         let world = world_mutex.lock().unwrap();
@@ -86,8 +88,10 @@ pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dir
     }
 
     // Nice cleanup: Move cursor below the world, so we can see how we finished
-    let world = world_mutex.lock().unwrap();
-    write!(screen, "{}", goto_cursor_coord(&Coord::at(0, (world.floor.rows+7) as u16))).unwrap();
+    {
+        let world = world_mutex.lock().unwrap();
+        write!(screen, "{}", goto_cursor_coord(&Coord::at(0, (world.floor.rows+7) as u16))).unwrap();
+    }
     print!("{}", termion::cursor::Show);
     screen.flush().unwrap();
 }

@@ -3,46 +3,74 @@ extern crate termion;
 
 use std::sync::*;
 use std::thread;
+use std::time::*;
 
-use rusty_sword::game::*;
+use termion::event::*;
+
+use rusty_sword::actor::*;
 use rusty_sword::input::*;
 use rusty_sword::primitive::*;
 use rusty_sword::render::*;
 use rusty_sword::world::*;
 
 fn main() {
-    let world_arc = Arc::new(Mutex::new(World::new(60, 30)));
-    World::new_player(&world_arc);
+    let world = Arc::new(Mutex::new(World::new(60, 30)));
+    World::new_player(&world);
 
     let stop = Arc::new(Mutex::new(false));
 
     let (dirty_coord_tx, dirty_coord_rx) = mpsc::channel::<Coord>();
+    let (input_tx, input_rx) = mpsc::channel::<Key>();
 
     // Render Thread
     let render_thread = {
-        let world = world_arc.clone();
+        let world = world.clone();
         let stop = stop.clone();
         thread::spawn(move || { render_loop(world, stop, dirty_coord_rx) })
     };
 
     // Input Thread
-    let dirty_coord_tx2 = dirty_coord_tx.clone();
     let input_thread = {
-        let world = world_arc.clone();
+        let world = world.clone();
         let stop = stop.clone();
-        thread::spawn(move || { input_loop(world, stop, dirty_coord_tx2) })
+        let input_tx = input_tx.clone();
+        thread::spawn(move || { input_loop(world, stop, input_tx) })
     };
 
-    // Game Thread
-    let game_thread = {
-        let world = world_arc.clone();
-        let stop = stop.clone();
-        thread::spawn(move || { game_loop(world, stop) })
-    };
+    //////////////////////////////////////////////////
+    // Game Loop
+    let mut last_instant = Instant::now();
+    'game: loop {
+        {
+            let stop_value = stop.lock().unwrap();
+            if *stop_value {
+                break;
+            }
+        }
+        let current_instant = Instant::now();
+        let delta = current_instant - last_instant;
+
+        // Handle input sent by the Input Thread
+        while let Ok(key) = input_rx.try_recv() {
+            match key {
+                Key::Char('q') => break 'game,
+                Key::Char(ch) => {
+                    let mut world = world.lock().unwrap();
+                    world.show_message(ch.to_string());
+                },
+                _ => {},
+            }
+        }
+
+        let mut world = world.lock().unwrap();
+        world.players[0].update(delta);
+
+        last_instant = current_instant;
+        thread::sleep(Duration::from_millis(10));
+    }
 
     // Wait for other threads to stop before exiting
     render_thread.join().unwrap();
     input_thread.join().unwrap();
-    game_thread.join().unwrap();
     println!("Thanks for playing!");
 }
