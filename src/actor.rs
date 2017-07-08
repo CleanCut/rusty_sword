@@ -5,6 +5,7 @@ use self::rand::{Rng, sample};
 use floor::*;
 use primitive::*;
 use timer::*;
+use ::*;
 
 pub fn sword_symbol(direction : &Direction) -> String {
     match *direction {
@@ -22,6 +23,7 @@ pub struct Player {
    pub sword_coord : Coord,
    pub symbol : String,
    pub dirty : bool,
+   pub score : u64,
 }
 
 impl Player {
@@ -32,26 +34,32 @@ impl Player {
             sword_coord : coord.to_the(Right),
             symbol : String::from("ℎ"), // U-210e
             dirty : true,
-
+            score : 0,
         }
     }
-    pub fn travel(&mut self, direction : Direction, floor : &Floor, dirty_coords : &mut Vec<Coord>) {
+    pub fn travel(&mut self, direction : Direction,
+                  floor : &Floor,
+                  dirty_coords : &mut Vec<Coord>) -> bool {
+        let mut moved = false;
         // Do I change direction?
         if self.facing != direction {
             self.dirty = true;
             dirty_coords.push(self.sword_coord);
             self.facing = direction;
-        }
-        // Can I move?
-        let to_coord = self.coord.to_the(self.facing);
-        if !floor.is_wall(&to_coord) {
-            self.dirty = true;
-            dirty_coords.push(self.coord);
-            dirty_coords.push(self.sword_coord);
-            self.coord = to_coord;
+        } else {
+            // Can I move?
+            let to_coord = self.coord.to_the(self.facing);
+            if !floor.is_wall(&to_coord) {
+                self.dirty = true;
+                moved = true;
+                dirty_coords.push(self.coord);
+                dirty_coords.push(self.sword_coord);
+                self.coord = to_coord;
+            }
         }
         // Now, where is the sword?
         self.sword_coord = self.coord.to_the(self.facing);
+        return moved;
     }
 }
 
@@ -77,5 +85,7 @@ impl Monster {
             symbol : sample(&mut rng, monster_symbols, 1)[0].to_string(),
             move_timer : Timer::from_millis(sample(&mut rng, 500..1500, 1)[0]),
         }
+    }
+    pub fn update(&mut self, delta : Duration) {
     }
 }

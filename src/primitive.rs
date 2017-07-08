@@ -26,12 +26,18 @@ pub struct Coord {
 }
 
 impl Coord {
+    pub fn new(col : u16, row : u16) -> Self {
+        Self {
+            col : col.into(),
+            row : row.into(),
+        }
+    }
     pub fn to_the(&self, direction : Direction) -> Coord {
         match direction {
-            Up    => Coord { col: self.col, row: self.row-1 },
-            Down  => Coord { col: self.col, row: self.row+1 },
-            Left  => Coord { col: self.col-1, row: self.row },
-            Right => Coord { col: self.col+1, row: self.row },
+            Up    => Coord::new(self.col, self.row-1),
+            Down  => Coord::new(self.col, self.row+1),
+            Left  => Coord::new(self.col-1, self.row),
+            Right => Coord::new(self.col+1, self.row),
         }
     }
 }

@@ -8,11 +8,12 @@ use std::time::*;
 
 use termion::event::*;
 
-use rusty_sword::actor::*;
-use rusty_sword::floor::*;
-use rusty_sword::input::*;
-use rusty_sword::primitive::*;
-use rusty_sword::render::*;
+//use rusty_sword::actor::*;
+//use rusty_sword::floor::*;
+//use rusty_sword::input::*;
+//use rusty_sword::primitive::*;
+//use rusty_sword::render::*;
+use rusty_sword::*;
 
 fn main() {
     let mut rng = rand::thread_rng();
@@ -23,9 +24,15 @@ fn main() {
     let floor        = Arc::new(Mutex::new(Floor::new("Dungeon Level 1", 60, 30)));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
     let messages     = Arc::new(Mutex::new(vec!["Welcome to: Rusty Sword – Game of Infamy!".to_string()]));
-    let player       = Arc::new(Mutex::new(Player::new(Coord {col: 5, row: 1})));
-    let monsters     = Arc::new(Mutex::new(vec![Monster::new(Coord {col: 1, row: 1}, &mut rng)]));
-
+    let player       = Arc::new(Mutex::new(Player::new(Coord::new(15, 15))));
+    let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
+    {
+        let mut monsters = monsters.lock().unwrap();
+        monsters.push(Monster::new(Coord::new(1, 1), &mut rng));
+        monsters.push(Monster::new(Coord::new(58, 1), &mut rng));
+        monsters.push(Monster::new(Coord::new(1, 28), &mut rng));
+        monsters.push(Monster::new(Coord::new(58, 28), &mut rng));
+    }
     // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
     // - stop should be locked and released when no other objects are locked
     let stop = Arc::new(Mutex::new(false));
@@ -52,9 +59,10 @@ fn main() {
 
     //-------------------------------------------------------------------------
     // Game Loop
+    let mut player_moved = false;
     let mut last_instant = Instant::now();
-    'game: loop {
-        thread::sleep(Duration::from_millis(10));
+    loop {
+        thread::sleep(Duration::from_millis(1));
         // Time to stop?
         {
             if *stop.lock().unwrap() {
@@ -65,20 +73,49 @@ fn main() {
         let floor = floor.lock().unwrap();
         let mut dirty_coords = dirty_coords.lock().unwrap();
         let mut player = player.lock().unwrap();
+        let mut monsters = monsters.lock().unwrap();
+        let mut messages = messages.lock().unwrap();
 
         let current_instant = Instant::now();
         let delta = current_instant - last_instant;
 
         // Handle input sent by the Input Thread
+        player_moved = false;
         while let Ok(key) = input_rx.try_recv() {
             match key {
                 Key::Char(ch) => {
                     if let Some(direction) = char_to_direction(ch) {
-                        player.travel(direction, &floor, &mut dirty_coords);
+                        player_moved = player.travel(direction, &floor, &mut dirty_coords);
                     }
                 },
                 _ => {},
             }
+        }
+
+        // Update monster timers
+        for monster in monsters.iter_mut() {
+            monster.update(delta);
+        }
+
+        // Monsters don't move the same frame that players do
+        if !player_moved {
+            for monster in monsters.iter_mut() {
+                if monster.move_timer.ready {
+                    monster.move_timer.reset();
+                    messages.push("A monster moved.".to_string());
+                }
+            }
+        }
+
+        // Did a monster die?
+        let num_monsters = monsters.len();
+        monsters.retain(|monster| monster.coord != player.sword_coord);
+        let num_killed = num_monsters - monsters.len();
+        if num_killed > 0 {
+            for _ in 0..num_killed {
+                messages.push("You killed a monster!".to_string());
+            }
+            player.score += num_killed as u64;
         }
 
         last_instant = current_instant;
