@@ -18,6 +18,7 @@ impl Timer {
     }
 
     pub fn reset(&mut self) {
+        self.ready = false;
         self.time_left = self.time;
     }
 
@@ -25,8 +26,9 @@ impl Timer {
         if self.ready {
             return;
         }
-        self.time_left = self.time_left - delta;
-        if self.time_left < Duration::from_secs(0) {
+        if let Some(result) = self.time_left.checked_sub(delta) {
+            self.time_left = result;
+        } else {
             self.ready = true;
         }
     }

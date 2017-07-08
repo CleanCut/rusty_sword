@@ -1,18 +1,4 @@
-extern crate rand;
-extern crate rusty_sword;
-extern crate termion;
-
-use std::sync::*;
-use std::thread;
-use std::time::*;
-
-use termion::event::*;
-
-//use rusty_sword::actor::*;
-//use rusty_sword::floor::*;
-//use rusty_sword::input::*;
-//use rusty_sword::primitive::*;
-//use rusty_sword::render::*;
+pub extern crate rusty_sword;
 use rusty_sword::*;
 
 fn main() {
@@ -26,13 +12,7 @@ fn main() {
     let messages     = Arc::new(Mutex::new(vec!["Welcome to: Rusty Sword – Game of Infamy!".to_string()]));
     let player       = Arc::new(Mutex::new(Player::new(Coord::new(15, 15))));
     let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
-    {
-        let mut monsters = monsters.lock().unwrap();
-        monsters.push(Monster::new(Coord::new(1, 1), &mut rng));
-        monsters.push(Monster::new(Coord::new(58, 1), &mut rng));
-        monsters.push(Monster::new(Coord::new(1, 28), &mut rng));
-        monsters.push(Monster::new(Coord::new(58, 28), &mut rng));
-    }
+
     // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
     // - stop should be locked and released when no other objects are locked
     let stop = Arc::new(Mutex::new(false));
@@ -59,10 +39,13 @@ fn main() {
 
     //-------------------------------------------------------------------------
     // Game Loop
-    let mut player_moved = false;
+    let mut player_moved;
+    let mut player_died;
+    let mut spawn_timer = Timer::from_millis(sample(&mut rng, 1000..5000, 1)[0]);
     let mut last_instant = Instant::now();
     loop {
         thread::sleep(Duration::from_millis(1));
+        player_died = false;
         // Time to stop?
         {
             if *stop.lock().unwrap() {
@@ -97,13 +80,10 @@ fn main() {
             monster.update(delta);
         }
 
-        // Monsters don't move the same frame that players do
+        // Monsters turn to move...unless the player did this frame.
         if !player_moved {
             for monster in monsters.iter_mut() {
-                if monster.move_timer.ready {
-                    monster.move_timer.reset();
-                    messages.push("A monster moved.".to_string());
-                }
+                monster.try_travel(player.coord, &floor, &mut dirty_coords);
             }
         }
 
@@ -116,6 +96,21 @@ fn main() {
                 messages.push("You killed a monster!".to_string());
             }
             player.score += num_killed as u64;
+        }
+
+        // Spawn a new monster!
+        spawn_timer.update(delta);
+        if spawn_timer.ready {
+            spawn_timer = Timer::from_millis(sample(&mut rng, 2000..10000, 1)[0]);
+            let to_coord = Coord::new(
+                sample(&mut rng, 1..59, 1)[0],
+                sample(&mut rng, 1..29, 1)[0],
+            );
+            if to_coord != player.coord {
+                let monster = Monster::new(to_coord, &mut rng);
+                messages.push(format!("Monster {} spawned at", monster.symbol));
+                monsters.push(monster);
+            }
         }
 
         last_instant = current_instant;

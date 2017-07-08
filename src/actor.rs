@@ -1,10 +1,3 @@
-extern crate rand;
-//use rand::Rng;
-use self::rand::{Rng, sample};
-
-use floor::*;
-use primitive::*;
-use timer::*;
 use ::*;
 
 pub fn sword_symbol(direction : &Direction) -> String {
@@ -37,7 +30,8 @@ impl Player {
             score : 0,
         }
     }
-    pub fn travel(&mut self, direction : Direction,
+    pub fn travel(&mut self,
+                  direction : Direction,
                   floor : &Floor,
                   dirty_coords : &mut Vec<Coord>) -> bool {
         let mut moved = false;
@@ -83,9 +77,30 @@ impl Monster {
         Self {
             coord : coord,
             symbol : sample(&mut rng, monster_symbols, 1)[0].to_string(),
-            move_timer : Timer::from_millis(sample(&mut rng, 500..1500, 1)[0]),
+            move_timer : Timer::from_millis(sample(&mut rng, 300..1500, 1)[0]),
         }
     }
+    //pub fn spawn(&mut Rng, cols : u16, rows : u16, monsters : &mut Vec<Monster>) {
+
+
+    //}
     pub fn update(&mut self, delta : Duration) {
+        self.move_timer.update(delta);
+    }
+    pub fn try_travel(&mut self,
+                      target : Coord,
+                      floor : &Floor,
+                      dirty_coords : &mut Vec<Coord>) {
+        if !self.move_timer.ready {
+            return;
+        }
+        self.move_timer.reset();
+        let to_coord = self.coord.to(target);
+        // Can't move through walls
+        if floor.is_wall(&to_coord) {
+            return;
+        }
+        dirty_coords.push(self.coord);
+        self.coord = to_coord;
     }
 }

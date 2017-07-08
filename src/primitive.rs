@@ -40,5 +40,27 @@ impl Coord {
             Right => Coord::new(self.col+1, self.row),
         }
     }
+    pub fn to(&self, target : Coord) -> Coord {
+        // Are we already there?
+        if *self == target {
+            return *self;
+        }
+        // Move on the axis that's furthest away
+        let col_diff = self.col as i32 - target.col as i32;
+        let row_diff = self.row as i32 - target.row as i32;
+        if col_diff.abs() > row_diff.abs() {
+            if col_diff < 0 {
+                return self.to_the(Right);
+            } else {
+                return self.to_the(Left);
+            }
+        } else {
+            if row_diff < 0 {
+                return self.to_the(Down);
+            } else {
+                return self.to_the(Up);
+            }
+        }
+    }
 }
 
