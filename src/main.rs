@@ -25,7 +25,7 @@ fn main() {
 
     // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
     // - stop should be locked and released when no other objects are locked
-    let stop     = Arc::new(Mutex::new(false));
+    let stop = Arc::new(Mutex::new(false));
 
 
     // Render Thread
@@ -59,7 +59,7 @@ fn main() {
             }
         }
         // Once we can lock floor, we can lock anything else we want in this thread.
-        let mut floor = floor.lock().unwrap();
+        let floor = floor.lock().unwrap();
         let mut dirty_coords = dirty_coords.lock().unwrap();
         let mut player = player.lock().unwrap();
 

@@ -18,14 +18,14 @@ pub fn char_to_direction(ch : char) -> Option<Direction> {
     }
 }
 
-#[derive(Clone, Copy)]
+#[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Coord {
     pub col : u16,
     pub row : u16,
 }
 
 impl Coord {
-    pub fn get_to_the(&self, direction : Direction) -> Coord {
+    pub fn to_the(&self, direction : Direction) -> Coord {
         match direction {
             Up    => Coord { col: self.col, row: self.row-1 },
             Down  => Coord { col: self.col, row: self.row+1 },
@@ -35,6 +35,3 @@ impl Coord {
     }
 }
 
-pub fn clamp(x : u16, min : u16, max : u16) -> u16 {
-    if x < min { min } else if x > max { max } else { x }
-}

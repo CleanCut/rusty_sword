@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use floor::*;
 use primitive::*;
 use primitive::Direction::*;
@@ -27,7 +25,7 @@ impl Player {
         Self {
             coord: coord,
             facing: Right,
-            sword_coord : coord.get_to_the(Right),
+            sword_coord : coord.to_the(Right),
             symbol : String::from("ℎ"), // U-210e
             dirty : true,
 
@@ -41,7 +39,7 @@ impl Player {
             self.facing = direction;
         }
         // Can I move?
-        let to_coord = self.coord.get_to_the(self.facing);
+        let to_coord = self.coord.to_the(self.facing);
         if !floor.is_wall(&to_coord) {
             self.dirty = true;
             dirty_coords.push(self.coord);
@@ -49,7 +47,7 @@ impl Player {
             self.coord = to_coord;
         }
         // Now, where is the sword?
-        self.sword_coord = self.coord.get_to_the(self.facing);
+        self.sword_coord = self.coord.to_the(self.facing);
     }
 }
 

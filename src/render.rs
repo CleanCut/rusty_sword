@@ -65,7 +65,7 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
         }
 
         // Once we can lock floor, we can lock anything else we want in this thread.
-        let mut floor = floor.lock().unwrap();
+        let floor = floor.lock().unwrap();
 
         // Redraw any dirty coordinates
         let mut dirty_coords = dirty_coords.lock().unwrap();
