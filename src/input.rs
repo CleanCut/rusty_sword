@@ -6,10 +6,7 @@ use std::thread;
 use termion::event::*;
 use termion::input::TermRead;
 
-use world::*;
-
-
-pub fn input_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, input_tx : mpsc::Sender<Key> ) {
+pub fn input_loop(stop : Arc<Mutex<bool>>, input_tx : mpsc::Sender<Key> ) {
 
     let stdin = stdin();
     let mut stdin_events = stdin.events();
@@ -18,9 +15,8 @@ pub fn input_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, inpu
         if let Ok(event) = c.unwrap() {
             match event {
                 // Stop the game?
-                Event::Key(Key::Char('q'))|Event::Key(Key::Esc) => {
-                    let mut stop_value = stop.lock().unwrap();
-                    *stop_value = true;
+                Event::Key(Key::Esc) => {
+                    *stop.lock().unwrap() = true;
                     break;
                 },
                 Event::Key(k) => {

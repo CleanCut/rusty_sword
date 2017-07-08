@@ -7,7 +7,6 @@ use termion::input::MouseTerminal;
 
 use actor::*;
 use floor::*;
-use world::*;
 use primitive::*;
 
 use std::io::{Write, stdout};
@@ -36,65 +35,83 @@ fn goto_cursor_coord(coord : &Coord) -> termion::cursor::Goto {
 }
 
 
-pub fn render_loop(world_mutex : Arc<Mutex<World>>, stop : Arc<Mutex<bool>>, dirty_coord_rx : mpsc::Receiver<Coord>) {
+pub fn render_loop(floor        : Arc<Mutex<Floor>>,
+                   dirty_coords : Arc<Mutex<Vec<Coord>>>,
+                   messages     : Arc<Mutex<Vec<String>>>,
+                   player       : Arc<Mutex<Player>>,
+                   monsters     : Arc<Mutex<Vec<Monster>>>,
+                   stop         : Arc<Mutex<bool>>) {
+
     let mut screen = MouseTerminal::from(stdout().into_raw_mode().unwrap());
     // Hide the cursor, clear the screen
     write!(screen, "{}{}", termion::cursor::Hide, termion::clear::All).unwrap();
 
     {
         write!(screen, "{}", termion::cursor::Goto(1, 1)).unwrap();
-        let world = world_mutex.lock().unwrap();
-        render_floor(&mut screen, &world.floor);
+        let floor = floor.lock().unwrap();
+        render_floor(&mut screen, &floor);
     }
 
     // Render Loop
     loop {
+        // Don't render too hot.
+        thread::sleep(Duration::from_millis(10));
+
         // Time to stop?
         {
-            let stop = stop.lock().unwrap();
-            if *stop {
+            if *stop.lock().unwrap() {
                 break;
             }
         }
 
-        let world = world_mutex.lock().unwrap();
+        // Once we can lock floor, we can lock anything else we want in this thread.
+        let mut floor = floor.lock().unwrap();
 
-        // Redraw any dirty world coordinates
-        while let Ok(coord) = dirty_coord_rx.try_recv() {
-            write!(screen, "{}{}", goto_cursor_coord(&coord), world.floor.get_symbol(&coord)).unwrap();
+        // Redraw any dirty coordinates
+        let mut dirty_coords = dirty_coords.lock().unwrap();
+        for coord in dirty_coords.drain(..) {
+            write!(screen, "{}{}", goto_cursor_coord(&coord), floor.get_symbol(&coord)).unwrap();
         }
 
         // Render Player
-        write!(screen, "{}", goto_cursor_coord(&world.player.coord)).unwrap();
-        write!(screen, "{}", &world.player.symbol).unwrap();
-        // Player's sword
-        write!(screen, "{}", goto_cursor_coord(&world.player.sword_coord)).unwrap();
-        write!(screen, "{}", &sword_symbol(&world.player.facing)).unwrap();
+        {
+            let mut player = player.lock().unwrap();
+            if player.dirty {
+                player.dirty = false;
+                // Player's sword
+                write!(screen, "{}", goto_cursor_coord(&player.sword_coord)).unwrap();
+                write!(screen, "{}", &sword_symbol(&player.facing)).unwrap();
+                // Player himself
+                write!(screen, "{}", goto_cursor_coord(&player.coord)).unwrap();
+                write!(screen, "{}", &player.symbol).unwrap();
+            }
+        }
 
         // Render Monsters
-        for monster in &world.monsters {
-            write!(screen, "{}", goto_cursor_coord(&monster.coord)).unwrap();
-            write!(screen, "{}", &monster.symbol).unwrap();
+        {
+            let monsters = monsters.lock().unwrap();
+            for monster in monsters.iter() {
+                write!(screen, "{}", goto_cursor_coord(&monster.coord)).unwrap();
+                write!(screen, "{}", &monster.symbol).unwrap();
+            }
         }
 
         // Bottom text
-        write!(screen, "{}", termion::cursor::Goto(1, (world.floor.rows+1) as u16)).unwrap();
-        write!(screen, "{}\n\r\n\r", world.floor.name).unwrap(); // Dungeon Name
-        for msg in &world.messages {
+        write!(screen, "{}", termion::cursor::Goto(1, (floor.rows+1) as u16)).unwrap();
+        write!(screen, "{}\n\r\n\r", floor.name).unwrap(); // Dungeon Name
+        let messages = messages.lock().unwrap();
+        for msg in messages.iter() {
             write!(screen, "{}{}", color::Fg(color::LightWhite), msg).unwrap();
             write!(screen, "{}{}\n\r", color::Fg(color::Reset), clear::UntilNewline).unwrap();
         }
 
         screen.flush().unwrap();
-
-        // Don't render too hot.
-        thread::sleep(Duration::from_millis(10));
     }
 
-    // Nice cleanup: Move cursor below the world, so we can see how we finished
+    // Nice cleanup: Move cursor below the floor, so we can see how we finished
     {
-        let world = world_mutex.lock().unwrap();
-        write!(screen, "{}", goto_cursor_coord(&Coord { col: 0, row: (world.floor.rows+7) as u16})).unwrap();
+        let floor = floor.lock().unwrap();
+        write!(screen, "{}", goto_cursor_coord(&Coord { col: 0, row: (floor.rows+7) as u16})).unwrap();
     }
     print!("{}", termion::cursor::Show);
     screen.flush().unwrap();

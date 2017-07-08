@@ -1,8 +1,6 @@
 use self::Direction::*;
 
-pub const WORLD_COLS : usize = 60;
-pub const WORLD_ROWS : usize = 30;
-
+#[derive(Copy, Clone, PartialEq, Eq)]
 pub enum Direction {
     Up,
     Down,

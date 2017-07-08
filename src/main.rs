@@ -7,65 +7,78 @@ use std::time::*;
 
 use termion::event::*;
 
+use rusty_sword::actor::*;
+use rusty_sword::floor::*;
 use rusty_sword::input::*;
 use rusty_sword::primitive::*;
 use rusty_sword::render::*;
-use rusty_sword::world::*;
 
 fn main() {
-    let world = Arc::new(Mutex::new(World::new()));
+    // To avoid lock contention for this group of objects, we'll follow the rule:
+    // - You must have a lock on floor before trying to lock anything else
+    // - You must not keep any locks when floor gets unlocked
+    let floor        = Arc::new(Mutex::new(Floor::new("Dungeon Level 1", 60, 30)));
+    let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
+    let messages     = Arc::new(Mutex::new(vec!["Welcome to: Rusty Sword – Game of Infamy!".to_string()]));
+    let player       = Arc::new(Mutex::new(Player::new(Coord {col: 1, row: 1})));
+    let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
-    let stop = Arc::new(Mutex::new(false));
+    // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
+    // - stop should be locked and released when no other objects are locked
+    let stop     = Arc::new(Mutex::new(false));
 
-    let (dirty_coord_tx, dirty_coord_rx) = mpsc::channel::<Coord>();
-    let (input_tx, input_rx) = mpsc::channel::<Key>();
 
     // Render Thread
     let render_thread = {
-        let world = world.clone();
+        let floor = floor.clone();
+        let dirty_coords = dirty_coords.clone();
+        let messages = messages.clone();
+        let player = player.clone();
+        let monsters = monsters.clone();
         let stop = stop.clone();
-        thread::spawn(move || { render_loop(world, stop, dirty_coord_rx) })
+        thread::spawn(move || { render_loop(floor, dirty_coords, messages, player, monsters, stop) })
     };
 
     // Input Thread
+    let (input_tx, input_rx) = mpsc::channel::<Key>();
     let input_thread = {
-        let world = world.clone();
         let stop = stop.clone();
         let input_tx = input_tx.clone();
-        thread::spawn(move || { input_loop(world, stop, input_tx) })
+        thread::spawn(move || { input_loop(stop, input_tx) })
     };
 
     //-------------------------------------------------------------------------
     // Game Loop
     let mut last_instant = Instant::now();
     'game: loop {
+        thread::sleep(Duration::from_millis(10));
+        // Time to stop?
         {
-            let stop_value = stop.lock().unwrap();
-            if *stop_value {
+            if *stop.lock().unwrap() {
                 break;
             }
         }
+        // Once we can lock floor, we can lock anything else we want in this thread.
+        let mut floor = floor.lock().unwrap();
+        let mut dirty_coords = dirty_coords.lock().unwrap();
+        let mut player = player.lock().unwrap();
+
         let current_instant = Instant::now();
         let delta = current_instant - last_instant;
 
         // Handle input sent by the Input Thread
         while let Ok(key) = input_rx.try_recv() {
             match key {
-                Key::Char('q') => break 'game,
                 Key::Char(ch) => {
-                    //match ch {
-                    //    'a' =>
-                    //}
-                    let mut world = world.lock().unwrap();
-                    world.show_message(ch.to_string());
+                    if let Some(direction) = char_to_direction(ch) {
+                        player.travel(direction, &floor, &mut dirty_coords);
+                    }
                 },
                 _ => {},
             }
         }
 
-
         last_instant = current_instant;
-        thread::sleep(Duration::from_millis(10));
     }
     // End game loop
 

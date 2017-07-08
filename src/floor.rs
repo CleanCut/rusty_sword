@@ -74,4 +74,7 @@ impl Floor {
             " ".to_string()
         }
     }
+    pub fn is_wall(&self, coord : &Coord) -> bool {
+        self.tiles[coord.row as usize][coord.col as usize].wall.is_some()
+    }
 }
