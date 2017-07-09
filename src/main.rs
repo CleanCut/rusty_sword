@@ -6,7 +6,7 @@ fn main() {
 
     // To avoid lock contention for this group of objects, we'll follow the rule:
     // - You must have a lock on floor before trying to lock anything else
-    // - You must not keep any locks when floor gets unlocked
+    // - You must unlock all other locks before (or when) floor gets unlocked
     let floor        = Arc::new(Mutex::new(Floor::new(60, 30)));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
     let messages     = Arc::new(Mutex::new(Vec::<String>::new()));
@@ -14,7 +14,7 @@ fn main() {
     let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
     // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
-    // - stop should be locked and released when no other objects are locked
+    // - stop should be locked only when no other objects are locked
     let stop = Arc::new(Mutex::new(false));
 
 
