@@ -66,7 +66,7 @@ impl Floor {
         }
     }
     pub fn get_symbol(&self, coord : &Coord) -> String {
-        if let Some(ref wall) = self.tiles[coord.row as usize][coord.col as usize].wall {
+        if let Some(wall) = self.tiles[coord.row as usize][coord.col as usize].wall {
             wall.to_string()
         } else {
             " ".to_string()
