@@ -84,7 +84,7 @@ fn main() {
 
         // Update monster timers
         for monster in monsters.iter_mut() {
-            monster.update(delta);
+            monster.move_timer.update(delta);
         }
 
         // Monsters move?

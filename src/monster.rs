@@ -23,18 +23,12 @@ impl Monster {
             move_timer : Timer::from_millis(sample(&mut rng, 200..1200, 1)[0]),
         }
     }
-    pub fn update(&mut self, delta : Duration) {
-        self.move_timer.update(delta);
-    }
-    pub fn try_travel(&mut self,
-                      target : Coord,
-                      dirty_coords : &mut Vec<Coord>) {
+    pub fn try_travel(&mut self, target : Coord, dirty_coords : &mut Vec<Coord>) {
         if !self.move_timer.ready {
             return;
         }
         self.move_timer.reset();
-        let to_coord = self.coord.to(target);
         dirty_coords.push(self.coord);
-        self.coord = to_coord;
+        self.coord = self.coord.to(target);
     }
 }
