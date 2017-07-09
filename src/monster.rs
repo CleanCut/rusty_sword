@@ -20,7 +20,7 @@ impl Monster {
         Self {
             coord : coord,
             symbol : sample(&mut rng, monster_symbols, 1)[0].to_string(),
-            move_timer : Timer::from_millis(sample(&mut rng, 300..1500, 1)[0]),
+            move_timer : Timer::from_millis(sample(&mut rng, 200..1200, 1)[0]),
         }
     }
     pub fn update(&mut self, delta : Duration) {
