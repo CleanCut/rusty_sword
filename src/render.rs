@@ -82,7 +82,7 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
             // Player Score
             let score_string = format!("Score: {}", player.score);
             write!(screen, "{}", termion::cursor::Goto(
-                    60-score_string.len() as u16, (floor.rows+1) as u16)).unwrap();
+                    (floor.cols + 1 - score_string.len()) as u16, (floor.rows+1) as u16)).unwrap();
             write!(screen, "{}", score_string).unwrap();
         }
 

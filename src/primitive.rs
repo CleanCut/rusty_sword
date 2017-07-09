@@ -9,13 +9,13 @@ pub enum Direction {
 }
 
 
-pub fn char_to_direction(ch : char) -> Option<Direction> {
-    match ch {
-        'w'|',' => Some(Up),
-        's'|'o' => Some(Down),
-        'a'     => Some(Left),
-        'd'|'e' => Some(Right),
-        _       => None
+pub fn byte_to_direction(byte : u8) -> Option<Direction> {
+    match byte {
+        b'w'|b',' => Some(Up),
+        b's'|b'o' => Some(Down),
+        b'a'      => Some(Left),
+        b'd'|b'e' => Some(Right),
+        _         => None
     }
 }
 

@@ -10,7 +10,7 @@ fn main() {
     let floor        = Arc::new(Mutex::new(Floor::new("Dungeon Level 1", 60, 30)));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
     let messages     = Arc::new(Mutex::new(vec!["Welcome to: Rusty Sword – Game of Infamy!".to_string()]));
-    let player       = Arc::new(Mutex::new(Player::new(Coord::new(15, 15))));
+    let player       = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
     let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
     // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
@@ -30,7 +30,7 @@ fn main() {
     };
 
     // Input Thread
-    let (input_tx, input_rx) = mpsc::channel::<Key>();
+    let (input_tx, input_rx) = mpsc::channel::<u8>();
     let input_thread = {
         let stop = stop.clone();
         let input_tx = input_tx.clone();
@@ -39,13 +39,15 @@ fn main() {
 
     //-------------------------------------------------------------------------
     // Game Loop
-    let mut player_moved;
-    let mut player_died;
-    let mut spawn_timer = Timer::from_millis(sample(&mut rng, 1000..5000, 1)[0]);
+    let mut player_moved = false;
+    let mut player_died = false;
+    let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
     loop {
-        thread::sleep(Duration::from_millis(1));
-        player_died = false;
+        thread::sleep(Duration::from_millis(10));
+        if player_died {
+            { *stop.lock().unwrap() = true; }
+        }
         // Time to stop?
         {
             if *stop.lock().unwrap() {
@@ -62,16 +64,10 @@ fn main() {
         let current_instant = Instant::now();
         let delta = current_instant - last_instant;
 
-        // Handle input sent by the Input Thread
-        player_moved = false;
-        while let Ok(key) = input_rx.try_recv() {
-            match key {
-                Key::Char(ch) => {
-                    if let Some(direction) = char_to_direction(ch) {
-                        player_moved = player.travel(direction, &floor, &mut dirty_coords);
-                    }
-                },
-                _ => {},
+        // Player moves?
+        while let Ok(byte) = input_rx.try_recv() {
+            if let Some(direction) = byte_to_direction(byte) {
+                player_moved = player.travel(direction, &floor, &mut dirty_coords);
             }
         }
 
@@ -80,7 +76,7 @@ fn main() {
             monster.update(delta);
         }
 
-        // Monsters turn to move...unless the player did this frame.
+        // Monsters move?
         if !player_moved {
             for monster in monsters.iter_mut() {
                 monster.try_travel(player.coord, &floor, &mut dirty_coords);
@@ -101,7 +97,7 @@ fn main() {
         // Spawn a new monster!
         spawn_timer.update(delta);
         if spawn_timer.ready {
-            spawn_timer = Timer::from_millis(sample(&mut rng, 2000..10000, 1)[0]);
+            spawn_timer = Timer::from_millis(sample(&mut rng, 1000..9000, 1)[0]);
             let to_coord = Coord::new(
                 sample(&mut rng, 1..59, 1)[0],
                 sample(&mut rng, 1..29, 1)[0],
@@ -113,12 +109,20 @@ fn main() {
             }
         }
 
+        // Did the player die?
+        if monsters.iter().any(|monster| monster.coord == player.coord) {
+            messages.push(format!("You were eaten by a monster."));
+            player_died = true;
+        }
+
+        // Take care of loop variables
         last_instant = current_instant;
+        player_moved = false;
     }
     // End game loop
 
     // Wait for other threads to stop before exiting
     render_thread.join().unwrap();
     input_thread.join().unwrap();
-    println!("Thanks for playing!");
+    println!("Thanks for playing Rust Sword – Game of Infamy!");
 }

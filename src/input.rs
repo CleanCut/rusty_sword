@@ -1,31 +1,29 @@
-use std::io::*;
-use std::sync::*;
-use std::time::*;
-use std::thread;
+use ::*;
 
-use termion::event::*;
-use termion::input::TermRead;
+pub fn input_loop(stop : Arc<Mutex<bool>>, input_tx : mpsc::Sender<u8> ) {
 
-pub fn input_loop(stop : Arc<Mutex<bool>>, input_tx : mpsc::Sender<Key> ) {
-
-    let stdin = stdin();
-    let mut stdin_events = stdin.events();
+    let mut player_input = async_stdin();
+    let mut buf : [u8; 1] = [0];
     loop {
-        let c = stdin_events.next();
-        if let Ok(event) = c.unwrap() {
-            match event {
-                // Stop the game?
-                Event::Key(Key::Char('q'))|Event::Key(Key::Esc) => {
-                    *stop.lock().unwrap() = true;
-                    break;
-                },
-                Event::Key(k) => {
-                    if let Err(_) = input_tx.send(k) {}
-                },
-                _ => {},
+        {
+            if *stop.lock().unwrap() {
+                break;
             }
         }
-        thread::sleep(Duration::from_millis(10));
+        while let Ok(amount) = player_input.read(&mut buf) {
+            if amount == 1 {
+                match buf[0] {
+                    27|b'q' => {
+                        *stop.lock().unwrap() = true;
+                    },
+                    _ => {
+                        if let Err(_) = input_tx.send(buf[0]) {};
+                    },
+                }
+            } else {
+                break;
+            }
+        }
+        thread::sleep(Duration::from_millis(1));
     }
-
 }
