@@ -86,10 +86,11 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
             }
         }
 
-        // Dungeon Name
-        write!(screen, "{}", termion::cursor::Goto(1, (floor.rows+1) as u16)).unwrap();
-        write!(screen, "{}\n\r\n\r", floor.name).unwrap(); // Dungeon Name
+        // Bottom text
+        write!(screen, "{}", cursor_coord(Coord::new(0, floor.rows as u16))).unwrap();
+        write!(screen, "Rusty Sword – Game of Infamy!").unwrap();
         // Messages
+        write!(screen, "{}", cursor_coord(Coord::new(0, (floor.rows + 2) as u16))).unwrap();
         let mut messages = messages.lock().unwrap();
         if messages.len() > 4 {
             messages.remove(0);

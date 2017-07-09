@@ -16,14 +16,13 @@ impl Tile {
 }
 
 pub struct Floor {
-    pub name: String,
     pub rows: usize,
     pub cols: usize,
     pub tiles: Vec<Vec<Tile>>
 }
 
 impl Floor {
-    pub fn new<T: ToString>(name : T, cols : usize, rows : usize) -> Self {
+    pub fn new(cols : usize, rows : usize) -> Self {
         // Tiles to use
         let horizontal   = Tile::new(Some("─")); // U-2500
         let vertical     = Tile::new(Some("│")); // U-2502
@@ -61,7 +60,6 @@ impl Floor {
 
         // Create the floor
         Self {
-            name: name.to_string(),
             rows: rows,
             cols: cols,
             tiles: tiles,

@@ -7,9 +7,9 @@ fn main() {
     // To avoid lock contention for this group of objects, we'll follow the rule:
     // - You must have a lock on floor before trying to lock anything else
     // - You must not keep any locks when floor gets unlocked
-    let floor        = Arc::new(Mutex::new(Floor::new("Dungeon Level 1", 60, 30)));
+    let floor        = Arc::new(Mutex::new(Floor::new(60, 30)));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
-    let messages     = Arc::new(Mutex::new(vec!["Welcome to: Rusty Sword – Game of Infamy!".to_string()]));
+    let messages     = Arc::new(Mutex::new(Vec::<String>::new()));
     let player       = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
     let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
@@ -138,6 +138,6 @@ fn main() {
 
     // Wait for other threads to stop before exiting
     render_thread.join().unwrap();
-    println!("Thanks for playing Rust Sword – Game of Infamy!");
+    println!("Thanks for playing!");
     sound_thread.join().unwrap();
 }
