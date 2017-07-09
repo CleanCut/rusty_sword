@@ -1,19 +1,4 @@
-extern crate termion;
-
-use termion::raw::*;
-use termion::clear;
-use termion::color;
-use termion::input::MouseTerminal;
-
-use actor::*;
-use floor::*;
-use primitive::*;
-
-use std::io::{Write, stdout};
-use std::sync::*;
-use std::thread;
-use std::time::Duration;
-
+use ::*;
 
 fn cursor_coord(coord : Coord) -> termion::cursor::Goto {
     // Coordinate translation naively assumes floor is being rendered at 1,1
@@ -27,10 +12,11 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
                    monsters     : Arc<Mutex<Vec<Monster>>>,
                    stop         : Arc<Mutex<bool>>) {
 
-    let mut screen = MouseTerminal::from(stdout().into_raw_mode().unwrap());
+    let mut screen = stdout().into_raw_mode().unwrap();
     // Hide the cursor, clear the screen
     write!(screen, "{}{}", termion::cursor::Hide, termion::clear::All).unwrap();
 
+    // Draw the entire floor
     write!(screen, "{}", cursor_coord(Coord::new(0,0))).unwrap();
     {
         let floor = floor.lock().unwrap();
@@ -49,7 +35,7 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
     // Render Loop
     loop {
         // Don't render too hot.
-        thread::sleep(Duration::from_millis(10));
+        sleep(Duration::from_millis(10));
 
         // Time to stop?
         {
@@ -74,10 +60,13 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
                 player.dirty = false;
                 // Player's sword
                 write!(screen, "{}", cursor_coord(player.sword_coord)).unwrap();
+                write!(screen, "{}", color::Fg(color::Red));
                 write!(screen, "{}", &sword_symbol(&player.facing)).unwrap();
                 // Player himself
                 write!(screen, "{}", cursor_coord(player.coord)).unwrap();
+                write!(screen, "{}", color::Fg(color::Blue));
                 write!(screen, "{}", &player.symbol).unwrap();
+                write!(screen, "{}", color::Fg(color::Reset));
             }
             // Player Score
             let score_string = format!("Score: {}", player.score);
@@ -91,7 +80,9 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
             let monsters = monsters.lock().unwrap();
             for monster in monsters.iter() {
                 write!(screen, "{}", cursor_coord(monster.coord)).unwrap();
+                write!(screen, "{}", color::Fg(color::Green));
                 write!(screen, "{}", &monster.symbol).unwrap();
+                write!(screen, "{}", color::Fg(color::Reset));
             }
         }
 

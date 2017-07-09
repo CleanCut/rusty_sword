@@ -26,26 +26,27 @@ fn main() {
         let player = player.clone();
         let monsters = monsters.clone();
         let stop = stop.clone();
-        thread::spawn(move || { render_loop(floor, dirty_coords, messages, player, monsters, stop) })
+        spawn(move || { render_loop(floor, dirty_coords, messages, player, monsters, stop) })
     };
 
-    // Input Thread
-    let (input_tx, input_rx) = mpsc::channel::<u8>();
-    let input_thread = {
+    // Sound Thread
+    let (sound_tx, sound_rx) = mpsc::channel::<&str>();
+    let sound_thread = {
         let stop = stop.clone();
-        let input_tx = input_tx.clone();
-        thread::spawn(move || { input_loop(stop, input_tx) })
+        spawn(move || { sound_loop(sound_rx, stop) } )
     };
 
     //-------------------------------------------------------------------------
     // Game Loop
     let mut player_moved = false;
-    let mut player_died = false;
+    let mut quit = false;
+    let mut astdin = async_stdin();
+    let mut bytebuf : [u8; 1] = [0];
     let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
     loop {
-        thread::sleep(Duration::from_millis(10));
-        if player_died {
+        sleep(Duration::from_millis(10));
+        if quit {
             { *stop.lock().unwrap() = true; }
         }
         // Time to stop?
@@ -65,9 +66,20 @@ fn main() {
         let delta = current_instant - last_instant;
 
         // Player moves?
-        while let Ok(byte) = input_rx.try_recv() {
-            if let Some(direction) = byte_to_direction(byte) {
-                player_moved = player.travel(direction, &floor, &mut dirty_coords);
+        while let Ok(amount) = astdin.read(&mut bytebuf) {
+            if amount == 1 { // input was available
+                match bytebuf[0] {
+                    27|b'q' => {
+                        quit = true;
+                    },
+                    _ => {
+                        if let Some(direction) = byte_to_direction(bytebuf[0]) {
+                            player_moved = player.travel(direction, &floor, &mut dirty_coords);
+                        }
+                    },
+                }
+            } else { // no more input
+                break;
             }
         }
 
@@ -89,6 +101,7 @@ fn main() {
         let num_killed = num_monsters - monsters.len();
         if num_killed > 0 {
             for _ in 0..num_killed {
+                sound_tx.send("monster_dies").unwrap();
                 messages.push("You killed a monster!".to_string());
             }
             player.score += num_killed as u64;
@@ -97,13 +110,14 @@ fn main() {
         // Spawn a new monster!
         spawn_timer.update(delta);
         if spawn_timer.ready {
-            spawn_timer = Timer::from_millis(sample(&mut rng, 1000..9000, 1)[0]);
+            spawn_timer = Timer::from_millis(sample(&mut rng, 1000..5000, 1)[0]);
             let to_coord = Coord::new(
                 sample(&mut rng, 1..59, 1)[0],
                 sample(&mut rng, 1..29, 1)[0],
             );
             if to_coord != player.coord {
                 let monster = Monster::new(to_coord, &mut rng);
+                sound_tx.send("monster_spawns").unwrap();
                 messages.push(format!("Monster {} spawned at", monster.symbol));
                 monsters.push(monster);
             }
@@ -111,8 +125,9 @@ fn main() {
 
         // Did the player die?
         if monsters.iter().any(|monster| monster.coord == player.coord) {
+            sound_tx.send("player_dies").unwrap();
             messages.push(format!("You were eaten by a monster."));
-            player_died = true;
+            quit = true;
         }
 
         // Take care of loop variables
@@ -123,6 +138,6 @@ fn main() {
 
     // Wait for other threads to stop before exiting
     render_thread.join().unwrap();
-    input_thread.join().unwrap();
     println!("Thanks for playing Rust Sword – Game of Infamy!");
+    sound_thread.join().unwrap();
 }

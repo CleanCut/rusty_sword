@@ -2,10 +2,18 @@ use ::*;
 
 pub fn sword_symbol(direction : &Direction) -> String {
     match *direction {
-        Up    => "↟".to_string(), // U-219f
-        Down  => "↡".to_string(), // U-21a1
-        Left  => "↞".to_string(), // U-219e
-        Right => "↠".to_string(), // U-21a0
+        Up    => "≀".to_string(), // U-2240
+        Down  => "≀".to_string(), // U-2240
+        Left  => "~".to_string(), // tilde
+        Right => "~".to_string(), // tilde
+        //Up    => "⊥".to_string(), // U-21a5
+        //Down  => "⊤".to_string(), // U-21a4
+        //Left  => "⊣".to_string(), // U-21a3
+        //Right => "⊢".to_string(), // U-21a2
+        //Up    => "↟".to_string(), // U-219f
+        //Down  => "↡".to_string(), // U-21a1
+        //Left  => "↞".to_string(), // U-219e
+        //Right => "↠".to_string(), // U-21a0
     }
 }
 
@@ -25,7 +33,7 @@ impl Player {
             coord : coord,
             facing : Right,
             sword_coord : coord.to_the(Right),
-            symbol : String::from("ℎ"), // U-210e
+            symbol : String::from("☥"), // U-2625
             dirty : true,
             score : 0,
         }
@@ -66,13 +74,13 @@ pub struct Monster {
 impl Monster {
     pub fn new(coord : Coord, mut rng : &mut Rng) -> Self {
         let monster_symbols = vec![
+            "·", // U-00b7
+            "☥", // U-2625
+            "☨", // U-2628
+            "♄", // U-2744
+            "❚", // U-275a
             "⟟", // U-27df
             "⟠", // U-27e0
-            "♄", // U-2744
-            "☥", // U-2625
-            "❚", // U-275a
-            "☨", // U-2628
-            "·", // U-00b7
         ];
         Self {
             coord : coord,

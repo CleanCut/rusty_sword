@@ -4,5 +4,6 @@ version = "0.1.0"
 authors = ["Nathan Stocks <nathan.stocks@gmail.com>"]
 
 [dependencies]
-termion = "1.4"
+ears = "0.4" # Install openal & libsndfile first
 rand = "0.3"
+termion = "1.4"
