@@ -4,8 +4,8 @@ pub fn sword_symbol(direction : &Direction) -> String {
     match *direction {
         Up    => "⤉".to_string(), // U-2909
         Down  => "⤈".to_string(), // U-2908
-        Left  => "↢".to_string(), // tilde
-        Right => "↣".to_string(), // tilde
+        Left  => "↢".to_string(), // U-21a2
+        Right => "↣".to_string(), // U-21a3
     }
 }
 
@@ -51,7 +51,7 @@ impl Player {
                 self.coord = to_coord;
             }
         }
-        // Now, where is the sword?
+        // Update the sword's position
         self.sword_coord = self.coord.to_the(self.facing);
         return moved;
     }
