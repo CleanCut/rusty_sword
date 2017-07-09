@@ -16,15 +16,17 @@ pub use termion::input::TermRead;
 pub use termion::raw::*;
 pub use termion::{clear, color};
 
-pub mod actor;
 pub mod floor;
+pub mod monster;
+pub mod player;
 pub mod primitive;
 pub mod render;
 pub mod sound;
 pub mod timer;
 
-pub use actor::*;
 pub use floor::*;
+pub use monster::*;
+pub use player::*;
 pub use primitive::*;
 pub use render::*;
 pub use sound::*;

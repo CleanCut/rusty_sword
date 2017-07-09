@@ -19,7 +19,5 @@ pub fn sound_loop(sound_rx : mpsc::Receiver<&str>, stop : Arc<Mutex<bool>>) {
             }
         }
     }
-    while monster_dies.is_playing() {}
-    while monster_spawns.is_playing() {}
     while player_dies.is_playing() {}
 }

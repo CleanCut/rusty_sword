@@ -91,7 +91,7 @@ fn main() {
         // Monsters move?
         if !player_moved {
             for monster in monsters.iter_mut() {
-                monster.try_travel(player.coord, &floor, &mut dirty_coords);
+                monster.try_travel(player.coord, &mut dirty_coords);
             }
         }
 

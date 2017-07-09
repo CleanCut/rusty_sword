@@ -60,13 +60,13 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
                 player.dirty = false;
                 // Player's sword
                 write!(screen, "{}", cursor_coord(player.sword_coord)).unwrap();
-                write!(screen, "{}", color::Fg(color::Red));
+                write!(screen, "{}", color::Fg(color::Red)).unwrap();
                 write!(screen, "{}", &sword_symbol(&player.facing)).unwrap();
                 // Player himself
                 write!(screen, "{}", cursor_coord(player.coord)).unwrap();
-                write!(screen, "{}", color::Fg(color::Blue));
+                write!(screen, "{}", color::Fg(color::Blue)).unwrap();
                 write!(screen, "{}", &player.symbol).unwrap();
-                write!(screen, "{}", color::Fg(color::Reset));
+                write!(screen, "{}", color::Fg(color::Reset)).unwrap();
             }
             // Player Score
             let score_string = format!("Score: {}", player.score);
@@ -80,9 +80,9 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
             let monsters = monsters.lock().unwrap();
             for monster in monsters.iter() {
                 write!(screen, "{}", cursor_coord(monster.coord)).unwrap();
-                write!(screen, "{}", color::Fg(color::Green));
+                write!(screen, "{}", color::Fg(color::Green)).unwrap();
                 write!(screen, "{}", &monster.symbol).unwrap();
-                write!(screen, "{}", color::Fg(color::Reset));
+                write!(screen, "{}", color::Fg(color::Reset)).unwrap();
             }
         }
 
