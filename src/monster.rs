@@ -10,12 +10,12 @@ impl Monster {
     pub fn new(coord : Coord, mut rng : &mut Rng) -> Self {
         let monster_symbols = vec![
             "·", // U-00b7
-            "☥", // U-2625
             "☨", // U-2628
             "♄", // U-2744
-            "❚", // U-275a
             "⟟", // U-27df
             "⟠", // U-27e0
+            "⧚", // U-29da
+            "⫳", // U-2af3
         ];
         Self {
             coord : coord,

@@ -2,10 +2,10 @@ use ::*;
 
 pub fn sword_symbol(direction : &Direction) -> String {
     match *direction {
-        Up    => "≀".to_string(), // U-2240
-        Down  => "≀".to_string(), // U-2240
-        Left  => "~".to_string(), // tilde
-        Right => "~".to_string(), // tilde
+        Up    => "⤉".to_string(), // U-2909
+        Down  => "⤈".to_string(), // U-2908
+        Left  => "↢".to_string(), // tilde
+        Right => "↣".to_string(), // tilde
     }
 }
 
