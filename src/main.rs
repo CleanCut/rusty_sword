@@ -17,7 +17,6 @@ fn main() {
     // - stop should be locked only when no other objects are locked
     let stop = Arc::new(Mutex::new(false));
 
-
     // Render Thread
     let render_thread = {
         let floor = floor.clone();
@@ -38,16 +37,14 @@ fn main() {
 
     //-------------------------------------------------------------------------
     // Game Loop
-    let mut player_moved = false;
     let mut quit = false;
     let mut astdin = async_stdin();
-    let mut bytebuf : [u8; 1] = [0];
     let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
     loop {
         sleep(Duration::from_millis(10));
         if quit {
-            { *stop.lock().unwrap() = true; }
+            *stop.lock().unwrap() = true;
         }
         // Time to stop?
         {
@@ -66,8 +63,10 @@ fn main() {
         let delta = current_instant - last_instant;
 
         // Player moves?
+        let mut player_moved = false;
+        let mut bytebuf : [u8; 1] = [0];
         while let Ok(amount) = astdin.read(&mut bytebuf) {
-            if amount == 1 { // input was available
+            if amount == 1 { // input was available, written to bytebuf
                 match bytebuf[0] {
                     27|b'q' => {
                         quit = true;
@@ -132,7 +131,6 @@ fn main() {
 
         // Take care of loop variables
         last_instant = current_instant;
-        player_moved = false;
     }
     // End game loop
 
