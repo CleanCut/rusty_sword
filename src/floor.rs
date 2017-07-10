@@ -6,9 +6,9 @@ pub struct Tile {
 }
 
 pub struct Floor {
-    pub rows: usize,
-    pub cols: usize,
-    pub tiles: Vec<Vec<Tile>>
+    pub rows : usize,
+    pub cols : usize,
+    pub tiles : Vec<Vec<Tile>>
 }
 
 impl Floor {
@@ -50,9 +50,9 @@ impl Floor {
 
         // Create the floor
         Self {
-            rows: rows,
-            cols: cols,
-            tiles: tiles,
+            rows : rows,
+            cols : cols,
+            tiles : tiles,
         }
     }
     pub fn get_symbol(&self, coord : &Coord) -> String {
