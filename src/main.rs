@@ -19,12 +19,12 @@ fn main() {
 
     // Render Thread
     let render_thread = {
+        let stop = stop.clone();
         let floor = floor.clone();
         let dirty_coords = dirty_coords.clone();
         let messages = messages.clone();
         let player = player.clone();
         let monsters = monsters.clone();
-        let stop = stop.clone();
         spawn(move || { render_loop(stop, floor, dirty_coords, messages, player, monsters) })
     };
 
