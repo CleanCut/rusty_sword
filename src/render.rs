@@ -1,8 +1,16 @@
 use ::*;
 
-fn cursor_coord(coord : Coord) -> termion::cursor::Goto {
-    // Coordinate translation naively assumes floor is being rendered at 1,1
-    termion::cursor::Goto(coord.col+1, coord.row+1)
+fn out<S: ToString>(screen : &mut RawTerminal<Stdout>, output : S) {
+    write!(*screen, "{}", output.to_string()).unwrap();
+}
+
+fn curs(screen : &mut RawTerminal<Stdout>, coord : Coord) {
+    // Coordinate translation assumes floor is being rendered at (1, 1)
+    out(screen, termion::cursor::Goto(coord.col+1, coord.row+1));
+}
+
+fn color<C: Color>(screen : &mut RawTerminal<Stdout>, clr : C) {
+    out(screen, Fg(clr));
 }
 
 pub fn render_loop(floor        : Arc<Mutex<Floor>>,
@@ -12,23 +20,23 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
                    monsters     : Arc<Mutex<Vec<Monster>>>,
                    stop         : Arc<Mutex<bool>>) {
 
-    let mut screen = stdout().into_raw_mode().unwrap();
-    // Hide the cursor, clear the screen
-    write!(screen, "{}{}", termion::cursor::Hide, termion::clear::All).unwrap();
+    let mut screen = &mut stdout().into_raw_mode().unwrap();
+    out(screen, termion::cursor::Hide); // Hide the cursor
+    out(screen, termion::clear::All);   // Clear the screen
 
     // Draw the entire floor
-    write!(screen, "{}", cursor_coord(Coord::new(0,0))).unwrap();
+    curs(screen, Coord::new(0,0));
     {
         let floor = floor.lock().unwrap();
         for row in &floor.tiles {
             for tile in row {
                 if let Some(ref wall) = tile.wall {
-                    write!(screen, "{}", wall).unwrap();
+                    out(screen, wall);
                 } else {
-                    write!(screen, " ").unwrap();
+                    out(screen, " ");
                 }
             }
-            write!(screen, "\r\n").unwrap();
+            out(screen, "\r\n");
         }
     }
 
@@ -50,7 +58,8 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
         // Redraw any dirty coordinates
         let mut dirty_coords = dirty_coords.lock().unwrap();
         for coord in dirty_coords.drain(..) {
-            write!(screen, "{}{}", cursor_coord(coord), floor.get_symbol(&coord)).unwrap();
+            curs(screen, coord);
+            out(screen, floor.get_symbol(&coord));
         }
 
         // Render Player
@@ -59,45 +68,56 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
             if player.dirty {
                 player.dirty = false;
                 // Player's sword
-                write!(screen, "{}", cursor_coord(player.sword_coord)).unwrap();
-                write!(screen, "{}", color::Fg(color::Red)).unwrap();
-                write!(screen, "{}", &sword_symbol(&player.facing)).unwrap();
+                curs(screen, player.sword_coord);
+                color(screen, Red);
+                out(screen, sword_symbol(&player.facing));
                 // Player himself
-                write!(screen, "{}", cursor_coord(player.coord)).unwrap();
-                write!(screen, "{}", color::Fg(color::Blue)).unwrap();
-                write!(screen, "{}", &player.symbol).unwrap();
-                write!(screen, "{}", color::Fg(color::Reset)).unwrap();
+                curs(screen, player.coord);
+                color(screen, Blue);
+                out(screen, &player.symbol);
+                color(screen, Reset);
             }
             // Player Score
             let score_string = format!("Score: {}", player.score);
-            write!(screen, "{}", termion::cursor::Goto(
-                    (floor.cols + 1 - score_string.len()) as u16, (floor.rows+1) as u16)).unwrap();
-            write!(screen, "{}", score_string).unwrap();
+            curs(screen, Coord::new((floor.cols - score_string.len()) as u16,
+                                               floor.rows as u16));
+            out(screen, score_string);
         }
 
         // Render Monsters
         {
             let monsters = monsters.lock().unwrap();
             for monster in monsters.iter() {
-                write!(screen, "{}", cursor_coord(monster.coord)).unwrap();
-                write!(screen, "{}", color::Fg(color::Green)).unwrap();
-                write!(screen, "{}", &monster.symbol).unwrap();
-                write!(screen, "{}", color::Fg(color::Reset)).unwrap();
+                curs(screen, monster.coord);
+                color(screen, Green);
+                out(screen, &monster.symbol);
+                color(screen, Reset);
             }
         }
 
         // Bottom text
-        write!(screen, "{}", cursor_coord(Coord::new(0, floor.rows as u16))).unwrap();
-        write!(screen, "Rusty Sword – Game of Infamy!").unwrap();
+        curs(screen, Coord::new(0, floor.rows as u16));
+        out(screen, "Rusty Sword – Game of Infamy!");
+
         // Messages
-        write!(screen, "{}", cursor_coord(Coord::new(0, (floor.rows + 2) as u16))).unwrap();
+        curs(screen, Coord::new(0, (floor.rows + 2) as u16));
         let mut messages = messages.lock().unwrap();
         if messages.len() > 4 {
             messages.remove(0);
         }
         for msg in messages.iter() {
-            write!(screen, "{}{}", color::Fg(color::LightWhite), msg).unwrap();
-            write!(screen, "{}{}\n\r", color::Fg(color::Reset), clear::UntilNewline).unwrap();
+            if msg.contains("spawned") {
+                color(screen, Green);
+            } else if msg.contains("You killed") {
+                color(screen, Blue);
+            } else if msg.contains("were eaten") {
+                color(screen, Red);
+            } else {
+                color(screen, LightWhite);
+            }
+            out(screen, msg);
+            out(screen, format!("{}\n\r", clear::UntilNewline));
+            color(screen, Reset);
         }
 
         screen.flush().unwrap();
@@ -106,9 +126,9 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
     // Nice cleanup: Move cursor below the floor, so we can see how we finished
     {
         let floor = floor.lock().unwrap();
-        write!(screen, "{}", cursor_coord(Coord::new(0, (floor.rows+7) as u16))).unwrap();
+        curs(screen, Coord::new(0, (floor.rows+7) as u16));
     }
-    print!("{}", termion::cursor::Show);
+    out(screen, termion::cursor::Show); // Show the cursor again
     screen.flush().unwrap();
 }
 

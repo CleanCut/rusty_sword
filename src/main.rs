@@ -117,7 +117,7 @@ fn main() {
             if to_coord != player.coord {
                 let monster = Monster::new(to_coord, &mut rng);
                 sound_tx.send("monster_spawns").unwrap();
-                messages.push(format!("Monster {} spawned", monster.symbol));
+                messages.push(format!("Monster {} spawned.", monster.symbol));
                 monsters.push(monster);
             }
         }

@@ -8,7 +8,6 @@ pub enum Direction {
     Right,
 }
 
-
 pub fn byte_to_direction(byte : u8) -> Option<Direction> {
     match byte {
         b'w'|b',' => Some(Up),
