@@ -95,7 +95,7 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
 
         // Game Title
         curs(screen, Coord::new(0, floor.rows as u16));
-        out(screen, "Rusty Sword – Game of Infamy!");
+        out(screen, "Rusty Sword - Game of Infamy!");
 
         // Messages
         curs(screen, Coord::new(0, (floor.rows + 2) as u16));
