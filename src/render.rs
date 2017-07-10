@@ -43,7 +43,6 @@ pub fn render_loop(stop         : Arc<Mutex<bool>>,
     // Render Loop
     loop {
         sleep(Duration::from_millis(10));
-
         {
             if *stop.lock().unwrap() {
                 break;

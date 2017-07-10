@@ -46,7 +46,6 @@ fn main() {
         if quit {
             *stop.lock().unwrap() = true;
         }
-        // Time to stop?
         {
             if *stop.lock().unwrap() {
                 break;

@@ -18,7 +18,7 @@ pub fn byte_to_direction(byte : u8) -> Option<Direction> {
     }
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Coord {
     pub col : u16,
     pub row : u16,
