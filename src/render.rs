@@ -67,7 +67,7 @@ pub fn render_loop(
                 // Player's sword
                 curs(screen, player.sword_coord);
                 color(screen, Red);
-                out(screen, sword_symbol(&player.facing));
+                out(screen, sword_symbol(player.facing));
                 // Player himself
                 curs(screen, player.coord);
                 color(screen, Blue);
