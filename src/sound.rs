@@ -5,6 +5,7 @@ pub fn sound_loop(sound_rx : mpsc::Receiver<&str>, stop : Arc<Mutex<bool>>) {
     let mut monster_spawns = Sound::new("monster_spawns.wav").unwrap();
     let mut player_dies = Sound::new("player_dies.wav").unwrap();
     loop {
+        sleep(Duration::from_millis(10));
         {
             if *stop.lock().unwrap() {
                 break;
