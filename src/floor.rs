@@ -5,16 +5,6 @@ pub struct Tile {
     pub wall : Option<char>,
 }
 
-impl Tile {
-    pub fn new(wall : Option<char>) -> Self {
-        if let Some(s) = wall {
-            Self { wall: Some(s) }
-        } else {
-            Self { wall: None }
-        }
-    }
-}
-
 pub struct Floor {
     pub rows: usize,
     pub cols: usize,
@@ -24,13 +14,13 @@ pub struct Floor {
 impl Floor {
     pub fn new(cols : usize, rows : usize) -> Self {
         // Tiles to use
-        let horizontal   = Tile::new(Some('─')); // U-2500
-        let vertical     = Tile::new(Some('│')); // U-2502
-        let top_left     = Tile::new(Some('┌')); // U-250c
-        let top_right    = Tile::new(Some('┐')); // U-2510
-        let bottom_left  = Tile::new(Some('└')); // U-2514
-        let bottom_right = Tile::new(Some('┘')); // U-2518
-        let blank        = Tile::new(None);
+        let horizontal   = Tile { wall : Some('─') }; // U-2500
+        let vertical     = Tile { wall : Some('│') }; // U-2502
+        let top_left     = Tile { wall : Some('┌') }; // U-250c
+        let top_right    = Tile { wall : Some('┐') }; // U-2510
+        let bottom_left  = Tile { wall : Some('└') }; // U-2514
+        let bottom_right = Tile { wall : Some('┘') }; // U-2518
+        let blank        = Tile { wall : None };
 
         // Create tiles 2D Vec and populate with empty rows
         let mut tiles = Vec::<Vec<Tile>>::with_capacity(rows);
