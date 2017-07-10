@@ -5,7 +5,6 @@ fn out<S: ToString>(screen : &mut RawTerminal<Stdout>, output : S) {
 }
 
 fn curs(screen : &mut RawTerminal<Stdout>, coord : Coord) {
-    // (0, 0) in coord space maps to (1, 1) in terminal space
     out(screen, termion::cursor::Goto(coord.col+1, coord.row+1));
 }
 

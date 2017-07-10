@@ -22,7 +22,6 @@ impl Floor {
         let bottom_right = Tile { wall : Some('┘') }; // U-2518
         let blank        = Tile { wall : None };
 
-        // Create tiles 2D Vec and populate with empty rows
         let mut tiles = Vec::<Vec<Tile>>::with_capacity(rows);
         for _ in 0..rows {
             tiles.push(Vec::<Tile>::with_capacity(rows));
