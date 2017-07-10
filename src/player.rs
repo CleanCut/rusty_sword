@@ -9,7 +9,6 @@ pub fn sword_symbol(direction : &Direction) -> String {
     }
 }
 
-// PLAYER
 pub struct Player {
    pub coord : Coord,
    pub facing : Direction,
