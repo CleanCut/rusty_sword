@@ -13,7 +13,7 @@ fn main() {
     let player       = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
     let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
-    // `stop` is not related to the objects above. To avoid lock contention, we'll follow the rule:
+    // To avoid lock contention, we'll follow the rule:
     // - stop should be locked only when no other objects are locked
     let stop = Arc::new(Mutex::new(false));
 
@@ -25,14 +25,14 @@ fn main() {
         let player = player.clone();
         let monsters = monsters.clone();
         let stop = stop.clone();
-        spawn(move || { render_loop(floor, dirty_coords, messages, player, monsters, stop) })
+        spawn(move || { render_loop(stop, floor, dirty_coords, messages, player, monsters) })
     };
 
     // Sound Thread
     let (sound_tx, sound_rx) = mpsc::channel::<&str>();
     let sound_thread = {
         let stop = stop.clone();
-        spawn(move || { sound_loop(sound_rx, stop) } )
+        spawn(move || { sound_loop(stop, sound_rx) } )
     };
 
     //-------------------------------------------------------------------------

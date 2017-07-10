@@ -13,12 +13,12 @@ fn color<C: Color>(screen : &mut RawTerminal<Stdout>, clr : C) {
     out(screen, Fg(clr));
 }
 
-pub fn render_loop(floor        : Arc<Mutex<Floor>>,
+pub fn render_loop(stop         : Arc<Mutex<bool>>,
+                   floor        : Arc<Mutex<Floor>>,
                    dirty_coords : Arc<Mutex<Vec<Coord>>>,
                    messages     : Arc<Mutex<Vec<String>>>,
                    player       : Arc<Mutex<Player>>,
-                   monsters     : Arc<Mutex<Vec<Monster>>>,
-                   stop         : Arc<Mutex<bool>>) {
+                   monsters     : Arc<Mutex<Vec<Monster>>>) {
 
     let mut screen = &mut stdout().into_raw_mode().unwrap();
     out(screen, termion::cursor::Hide); // Hide the cursor
