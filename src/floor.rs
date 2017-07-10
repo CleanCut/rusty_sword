@@ -1,4 +1,4 @@
-use primitive::*;
+use ::*;
 
 #[derive(Copy, Clone)]
 pub struct Tile {
