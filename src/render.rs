@@ -42,20 +42,18 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
 
     // Render Loop
     loop {
-        // Don't render too hot.
         sleep(Duration::from_millis(10));
 
-        // Time to stop?
         {
             if *stop.lock().unwrap() {
                 break;
             }
         }
 
-        // Once we can lock floor, we can lock anything else we want in this thread.
+        // Lock floor first...
         let floor = floor.lock().unwrap();
 
-        // Redraw any dirty coordinates
+        // Redraw any dirty coordinates with floor tiles
         let mut dirty_coords = dirty_coords.lock().unwrap();
         for coord in dirty_coords.drain(..) {
             curs(screen, coord);
@@ -80,7 +78,7 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
             // Player Score
             let score_string = format!("Score: {}", player.score);
             curs(screen, Coord::new((floor.cols - score_string.len()) as u16,
-                                               floor.rows as u16));
+                                    floor.rows as u16));
             out(screen, score_string);
         }
 
@@ -95,7 +93,7 @@ pub fn render_loop(floor        : Arc<Mutex<Floor>>,
             }
         }
 
-        // Bottom text
+        // Game Title
         curs(screen, Coord::new(0, floor.rows as u16));
         out(screen, "Rusty Sword – Game of Infamy!");
 
