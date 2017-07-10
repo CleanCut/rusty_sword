@@ -8,7 +8,7 @@ pub struct Tile {
 pub struct Floor {
     pub rows : usize,
     pub cols : usize,
-    pub tiles : Vec<Vec<Tile>>
+    pub tiles : Vec<Vec<Tile>>,
 }
 
 impl Floor {
