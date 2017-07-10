@@ -15,9 +15,9 @@ fn color<C: Color>(screen : &mut RawTerminal<Stdout>, clr : C) {
 pub fn render_loop(
     stop         : Arc<Mutex<bool>>,
     floor        : Arc<Mutex<Floor>>,
+    player       : Arc<Mutex<Player>>,
     dirty_coords : Arc<Mutex<Vec<Coord>>>,
     messages     : Arc<Mutex<Vec<String>>>,
-    player       : Arc<Mutex<Player>>,
     monsters     : Arc<Mutex<Vec<Monster>>>,
 ) {
     let mut screen = &mut stdout().into_raw_mode().unwrap();

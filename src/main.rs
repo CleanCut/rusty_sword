@@ -8,9 +8,9 @@ fn main() {
     // - You must have a lock on floor before trying to lock anything else
     // - You must unlock all other locks before (or when) floor gets unlocked
     let floor        = Arc::new(Mutex::new(Floor::new(60, 30)));
+    let player       = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
     let messages     = Arc::new(Mutex::new(Vec::<String>::new()));
-    let player       = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
     let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
     // To avoid lock contention, we'll follow the rule:
@@ -21,11 +21,11 @@ fn main() {
     let render_thread = {
         let stop = stop.clone();
         let floor = floor.clone();
+        let player = player.clone();
         let dirty_coords = dirty_coords.clone();
         let messages = messages.clone();
-        let player = player.clone();
         let monsters = monsters.clone();
-        spawn(move || { render_loop(stop, floor, dirty_coords, messages, player, monsters) })
+        spawn(move || { render_loop(stop, floor, player, dirty_coords, messages, monsters) })
     };
 
     // Sound Thread
