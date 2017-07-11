@@ -33,7 +33,6 @@ fn main() {
         spawn(move || { sound_loop(stop, sound_rx) } )
     };
 
-    //-------------------------------------------------------------------------
     // Game Loop
     let mut quit = false;
     let mut astdin = async_stdin();
