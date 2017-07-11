@@ -51,7 +51,7 @@ pub fn render_loop(
         let mut dirty_coords = dirty_coords.lock().unwrap();
         for coord in dirty_coords.drain(..) {
             curs(screen, coord);
-            out(screen, floor.get_symbol(&coord));
+            out(screen, floor.get_symbol(coord));
         }
 
         // Render Player
