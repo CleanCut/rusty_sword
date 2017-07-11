@@ -10,7 +10,6 @@ fn main() {
     let floor        = Arc::new(Mutex::new(Floor::new(60, 30)));
     let player       = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
-    let messages     = Arc::new(Mutex::new(Vec::<String>::new()));
     let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
     // To avoid lock contention, we'll follow the rule:
@@ -23,9 +22,8 @@ fn main() {
         let floor = floor.clone();
         let player = player.clone();
         let dirty_coords = dirty_coords.clone();
-        let messages = messages.clone();
         let monsters = monsters.clone();
-        spawn(move || { render_loop(stop, floor, player, dirty_coords, messages, monsters) })
+        spawn(move || { render_loop(stop, floor, player, dirty_coords, monsters) })
     };
 
     // Sound Thread
@@ -56,7 +54,6 @@ fn main() {
         let mut dirty_coords = dirty_coords.lock().unwrap();
         let mut player = player.lock().unwrap();
         let mut monsters = monsters.lock().unwrap();
-        let mut messages = messages.lock().unwrap();
 
         let current_instant = Instant::now();
         let delta = current_instant - last_instant;
@@ -100,7 +97,6 @@ fn main() {
         if num_killed > 0 {
             for _ in 0..num_killed {
                 sound_tx.send("monster_dies").unwrap();
-                messages.push("You killed a monster!".to_string());
             }
             player.score += num_killed as u64;
         }
@@ -116,7 +112,6 @@ fn main() {
             if to_coord != player.coord {
                 let monster = Monster::new(to_coord, &mut rng);
                 sound_tx.send("monster_spawns").unwrap();
-                messages.push(format!("Monster {} spawned.", monster.symbol));
                 monsters.push(monster);
             }
         }
@@ -124,7 +119,6 @@ fn main() {
         // Did the player die?
         if monsters.iter().any(|monster| monster.coord == player.coord) {
             sound_tx.send("player_dies").unwrap();
-            messages.push(format!("You were eaten by a monster."));
             quit = true;
         }
 

@@ -13,7 +13,6 @@ pub fn render_loop(
     floor        : Arc<Mutex<Floor>>,
     player       : Arc<Mutex<Player>>,
     dirty_coords : Arc<Mutex<Vec<Coord>>>,
-    messages     : Arc<Mutex<Vec<String>>>,
     monsters     : Arc<Mutex<Vec<Monster>>>,
 ) {
     let mut screen = &mut stdout().into_raw_mode().unwrap();
@@ -90,34 +89,13 @@ pub fn render_loop(
         curs(screen, Coord::new(0, floor.rows as u16));
         out(screen, "Rusty Sword - Game of Infamy!");
 
-        // Messages
-        curs(screen, Coord::new(0, (floor.rows + 2) as u16));
-        let mut messages = messages.lock().unwrap();
-        if messages.len() > 4 {
-            messages.remove(0);
-        }
-        for msg in messages.iter() {
-            if msg.contains("spawned") {
-                out(screen, Fg(Green));
-            } else if msg.contains("You killed") {
-                out(screen, Fg(Blue));
-            } else if msg.contains("were eaten") {
-                out(screen, Fg(Red));
-            } else {
-                out(screen, Fg(LightWhite));
-            }
-            out(screen, msg);
-            out(screen, format!("{}\n\r", clear::UntilNewline));
-            out(screen, Fg(Reset));
-        }
-
         screen.flush().unwrap();
     }
 
     // Nice cleanup: Move cursor below the floor, so we can see how we finished
     {
         let floor = floor.lock().unwrap();
-        curs(screen, Coord::new(0, (floor.rows + 7) as u16));
+        curs(screen, Coord::new(0, (floor.rows + 2) as u16));
     }
     out(screen, termion::cursor::Show); // Show the cursor again
     screen.flush().unwrap();
