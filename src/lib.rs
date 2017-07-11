@@ -13,7 +13,7 @@ pub use termion::async_stdin;
 pub use termion::color::{Red, Green, Blue, LightWhite, Reset, Color, Fg};
 pub use termion::input::TermRead;
 pub use termion::raw::{IntoRawMode, RawTerminal};
-pub use termion::{clear};
+pub use termion::clear;
 
 pub mod coord;
 pub mod floor;
