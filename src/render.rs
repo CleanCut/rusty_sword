@@ -117,7 +117,7 @@ pub fn render_loop(
     // Nice cleanup: Move cursor below the floor, so we can see how we finished
     {
         let floor = floor.lock().unwrap();
-        curs(screen, Coord::new(0, (floor.rows+7) as u16));
+        curs(screen, Coord::new(0, (floor.rows + 7) as u16));
     }
     out(screen, termion::cursor::Show); // Show the cursor again
     screen.flush().unwrap();
