@@ -10,12 +10,12 @@ pub fn sword_symbol(direction : Direction) -> String {
 }
 
 pub struct Player {
-   pub coord : Coord,
-   pub facing : Direction,
-   pub sword_coord : Coord,
-   pub symbol : String,
-   pub dirty : bool,
-   pub score : u64,
+    pub coord : Coord,
+    pub facing : Direction,
+    pub sword_coord : Coord,
+    pub symbol : String,
+    pub dirty : bool,
+    pub score : u64,
 }
 
 impl Player {

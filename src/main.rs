@@ -52,8 +52,8 @@ fn main() {
         }
         // Once we can lock floor, we can lock anything else we want in this thread.
         let floor = floor.lock().unwrap();
-        let mut dirty_coords = dirty_coords.lock().unwrap();
         let mut player = player.lock().unwrap();
+        let mut dirty_coords = dirty_coords.lock().unwrap();
         let mut monsters = monsters.lock().unwrap();
 
         let current_instant = Instant::now();

@@ -40,7 +40,7 @@ impl Floor {
             }
             tiles[row].push(vertical);
         }
-        // Bottom row is also all wall
+        // Bottom row is all wall
         tiles[rows-1].push(bottom_left);
         for _ in 1..cols-1 {
             tiles[rows-1].push(horizontal);
