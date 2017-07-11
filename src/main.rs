@@ -42,6 +42,7 @@ fn main() {
     loop {
         sleep(Duration::from_millis(10));
         if quit {
+            sleep(Duration::from_millis(50));
             *stop.lock().unwrap() = true;
         }
         {
