@@ -60,26 +60,24 @@ pub fn render_loop(
         }
 
         // Render Player
-        {
-            let mut player = player.lock().unwrap();
-            if player.dirty {
-                player.dirty = false;
-                // Player's sword
-                curs(screen, player.sword_coord);
-                color(screen, Red);
-                out(screen, sword_symbol(player.facing));
-                // Player himself
-                curs(screen, player.coord);
-                color(screen, Blue);
-                out(screen, &player.symbol);
-                color(screen, Reset);
-            }
-            // Player Score
-            let score_string = format!("Score: {}", player.score);
-            curs(screen, Coord::new((floor.cols - score_string.len()) as u16,
-                                    floor.rows as u16));
-            out(screen, score_string);
+        let mut player = player.lock().unwrap();
+        if player.dirty {
+            player.dirty = false;
+            // Player's sword
+            curs(screen, player.sword_coord);
+            color(screen, Red);
+            out(screen, sword_symbol(player.facing));
+            // Player himself
+            curs(screen, player.coord);
+            color(screen, Blue);
+            out(screen, &player.symbol);
+            color(screen, Reset);
         }
+        // Player Score
+        let score_string = format!("Score: {}", player.score);
+        curs(screen, Coord::new((floor.cols - score_string.len()) as u16,
+                                floor.rows as u16));
+        out(screen, score_string);
 
         // Render Monsters
         {
