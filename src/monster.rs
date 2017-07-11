@@ -11,7 +11,7 @@ impl Monster {
         let monster_symbols = vec![
             "·", // U-00b7
             "☨", // U-2628
-            "♄", // U-2744
+            "♄", // U-2644
             "⟟", // U-27df
             "⟠", // U-27e0
             "⧚", // U-29da

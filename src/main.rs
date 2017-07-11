@@ -2,8 +2,6 @@ pub extern crate rusty_sword;
 use rusty_sword::*;
 
 fn main() {
-    let mut rng = rand::thread_rng();
-
     // To avoid lock contention for this group of objects, we'll follow the rule:
     // - You must have a lock on floor before trying to lock anything else
     // - You must unlock all other locks before (or when) floor gets unlocked
@@ -23,7 +21,7 @@ fn main() {
         let player = player.clone();
         let dirty_coords = dirty_coords.clone();
         let monsters = monsters.clone();
-        spawn(move || { render_loop(stop, floor, player, dirty_coords, monsters) })
+        spawn(move || { render_loop(stop, floor, player, dirty_coords, monsters) } )
     };
 
     // Sound Thread
@@ -36,6 +34,7 @@ fn main() {
     // Game Loop
     let mut quit = false;
     let mut astdin = async_stdin();
+    let mut rng = rand::thread_rng();
     let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
     loop {
