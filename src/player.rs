@@ -42,7 +42,7 @@ impl Player {
         } else {
             // Can I move?
             let to_coord = self.coord.to_the(self.facing);
-            if !floor.is_wall(&to_coord) {
+            if !floor.is_wall(to_coord) {
                 self.dirty = true;
                 moved = true;
                 dirty_coords.push(self.coord);
