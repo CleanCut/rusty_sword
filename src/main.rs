@@ -109,9 +109,8 @@ fn main() {
                 sample(&mut rng, 1..29, 1)[0],
             );
             if to_coord != player.coord {
-                let monster = Monster::new(to_coord, &mut rng);
                 sound_tx.send("monster_spawns").unwrap();
-                monsters.push(monster);
+                monsters.push(Monster::new(to_coord, &mut rng));
             }
         }
 
@@ -121,7 +120,6 @@ fn main() {
             quit = true;
         }
 
-        // Take care of loop variables
         last_instant = current_instant;
     }
     // End game loop
