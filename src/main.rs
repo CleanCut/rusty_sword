@@ -49,7 +49,7 @@ fn main() {
                 break;
             }
         }
-        // Once we can lock floor, we can lock anything else we want in this thread.
+        // Lock floor first!
         let floor = floor.lock().unwrap();
         let mut player = player.lock().unwrap();
         let mut dirty_coords = dirty_coords.lock().unwrap();
@@ -62,7 +62,7 @@ fn main() {
         let mut player_moved = false;
         let mut bytebuf : [u8; 1] = [0];
         while let Ok(amount) = astdin.read(&mut bytebuf) {
-            if amount == 1 { // input was available, written to bytebuf
+            if amount == 1 {
                 match bytebuf[0] {
                     27|b'q' => {
                         quit = true;

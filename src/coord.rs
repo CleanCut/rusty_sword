@@ -14,7 +14,7 @@ pub fn byte_to_direction(byte : u8) -> Option<Direction> {
         b's'|b'o' => Some(Down),
         b'a'      => Some(Left),
         b'd'|b'e' => Some(Right),
-        _         => None
+        _         => None,
     }
 }
 
