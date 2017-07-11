@@ -8,10 +8,6 @@ fn curs(screen : &mut RawTerminal<Stdout>, coord : Coord) {
     out(screen, termion::cursor::Goto(coord.col+1, coord.row+1));
 }
 
-fn color<C: Color>(screen : &mut RawTerminal<Stdout>, clr : C) {
-    out(screen, Fg(clr));
-}
-
 pub fn render_loop(
     stop         : Arc<Mutex<bool>>,
     floor        : Arc<Mutex<Floor>>,
@@ -65,13 +61,13 @@ pub fn render_loop(
             player.dirty = false;
             // Player's sword
             curs(screen, player.sword_coord);
-            color(screen, Red);
+            out(screen, Fg(Red));
             out(screen, sword_symbol(player.facing));
             // Player himself
             curs(screen, player.coord);
-            color(screen, Blue);
+            out(screen, Fg(Blue));
             out(screen, &player.symbol);
-            color(screen, Reset);
+            out(screen, Fg(Reset));
         }
         // Player Score
         let score_string = format!("Score: {}", player.score);
@@ -84,9 +80,9 @@ pub fn render_loop(
             let monsters = monsters.lock().unwrap();
             for monster in monsters.iter() {
                 curs(screen, monster.coord);
-                color(screen, Green);
+                out(screen, Fg(Green));
                 out(screen, &monster.symbol);
-                color(screen, Reset);
+                out(screen, Fg(Reset));
             }
         }
 
@@ -102,17 +98,17 @@ pub fn render_loop(
         }
         for msg in messages.iter() {
             if msg.contains("spawned") {
-                color(screen, Green);
+                out(screen, Fg(Green));
             } else if msg.contains("You killed") {
-                color(screen, Blue);
+                out(screen, Fg(Blue));
             } else if msg.contains("were eaten") {
-                color(screen, Red);
+                out(screen, Fg(Red));
             } else {
-                color(screen, LightWhite);
+                out(screen, Fg(LightWhite));
             }
             out(screen, msg);
             out(screen, format!("{}\n\r", clear::UntilNewline));
-            color(screen, Reset);
+            out(screen, Fg(Reset));
         }
 
         screen.flush().unwrap();
