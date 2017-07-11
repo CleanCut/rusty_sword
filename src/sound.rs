@@ -22,3 +22,4 @@ pub fn sound_loop(stop : Arc<Mutex<bool>>, sound_rx : mpsc::Receiver<&str>) {
     }
     while player_dies.is_playing() {}
 }
+

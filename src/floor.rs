@@ -65,3 +65,4 @@ impl Floor {
         self.tiles[coord.row as usize][coord.col as usize].wall.is_some()
     }
 }
+

@@ -94,10 +94,8 @@ fn main() {
         monsters.retain(|monster| monster.coord != player.sword_coord);
         let num_killed = num_monsters - monsters.len();
         if num_killed > 0 {
-            for _ in 0..num_killed {
-                sound_tx.send("monster_dies").unwrap();
-            }
             player.score += num_killed as u64;
+            sound_tx.send("monster_dies").unwrap();
         }
 
         // Spawn a new monster!
@@ -129,3 +127,4 @@ fn main() {
     println!("Thanks for playing!");
     sound_thread.join().unwrap();
 }
+

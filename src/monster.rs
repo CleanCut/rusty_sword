@@ -32,3 +32,4 @@ impl Monster {
         self.coord = self.coord.to(target);
     }
 }
+
