@@ -72,7 +72,9 @@ pub fn render_loop(
         let score_string = format!("Score: {}", player.score);
         curs(screen, Coord::new((floor.cols - score_string.len()) as u16,
                                 floor.rows as u16));
+        out(screen, Fg(Blue));
         out(screen, score_string);
+        out(screen, Fg(Reset));
 
         // Render Monsters
         {
@@ -87,7 +89,9 @@ pub fn render_loop(
 
         // Game Title
         curs(screen, Coord::new(0, floor.rows as u16));
+        out(screen, Fg(LightWhite));
         out(screen, "Rusty Sword - Game of Infamy!");
+        out(screen, Fg(Reset));
 
         screen.flush().unwrap();
     }
