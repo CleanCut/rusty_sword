@@ -109,15 +109,15 @@ fn main() {
                 sample(&mut rng, 1..29, 1)[0],
             );
             if to_coord != player.coord {
-                sound_tx.send("monster_spawns").unwrap();
                 monsters.push(Monster::new(to_coord, &mut rng));
+                sound_tx.send("monster_spawns").unwrap();
             }
         }
 
         // Did the player die?
         if monsters.iter().any(|monster| monster.coord == player.coord) {
-            sound_tx.send("player_dies").unwrap();
             quit = true;
+            sound_tx.send("player_dies").unwrap();
         }
 
         last_instant = current_instant;
