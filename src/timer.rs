@@ -7,8 +7,8 @@ pub struct Timer {
 }
 
 impl Timer {
-    pub fn from_millis(milliseconds : u64) -> Self {
-        let duration = Duration::from_millis(milliseconds);
+    pub fn from_millis(ms : u64) -> Self {
+        let duration = Duration::from_millis(ms);
         Self {
             time : duration,
             time_left : duration,
