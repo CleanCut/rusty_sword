@@ -1,6 +1,5 @@
 use ::*;
 
-// Timer
 pub struct Timer {
     time : Duration,
     time_left : Duration,
