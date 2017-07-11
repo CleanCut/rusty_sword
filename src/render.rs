@@ -77,14 +77,12 @@ pub fn render_loop(
         out(screen, Fg(Reset));
 
         // Render Monsters
-        {
-            let monsters = monsters.lock().unwrap();
-            for monster in monsters.iter() {
-                curs(screen, monster.coord);
-                out(screen, Fg(Green));
-                out(screen, &monster.symbol);
-                out(screen, Fg(Reset));
-            }
+        let monsters = monsters.lock().unwrap();
+        for monster in monsters.iter() {
+            curs(screen, monster.coord);
+            out(screen, Fg(Green));
+            out(screen, &monster.symbol);
+            out(screen, Fg(Reset));
         }
 
         // Game Title
