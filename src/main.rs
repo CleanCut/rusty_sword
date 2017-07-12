@@ -72,7 +72,7 @@ fn main() {
                         }
                     },
                 }
-            } else { // no more input
+            } else {
                 break;
             }
         }
@@ -120,7 +120,6 @@ fn main() {
 
         last_instant = current_instant;
     }
-    // End game loop
 
     // Wait for other threads to stop before exiting
     render_thread.join().unwrap();

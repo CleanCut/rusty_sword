@@ -1,13 +1,5 @@
 use ::*;
 
-fn out<S: ToString>(screen : &mut RawTerminal<Stdout>, output : S) {
-    write!(*screen, "{}", output.to_string()).unwrap();
-}
-
-fn curs(screen : &mut RawTerminal<Stdout>, coord : Coord) {
-    out(screen, termion::cursor::Goto(coord.col+1, coord.row+1));
-}
-
 pub fn render_loop(
     stop         : Arc<Mutex<bool>>,
     floor        : Arc<Mutex<Floor>>,
@@ -103,3 +95,10 @@ pub fn render_loop(
     screen.flush().unwrap();
 }
 
+fn out<S: ToString>(screen : &mut RawTerminal<Stdout>, output : S) {
+    write!(*screen, "{}", output.to_string()).unwrap();
+}
+
+fn curs(screen : &mut RawTerminal<Stdout>, coord : Coord) {
+    out(screen, termion::cursor::Goto(coord.col+1, coord.row+1));
+}

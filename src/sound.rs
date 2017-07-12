@@ -1,6 +1,9 @@
 use ::*;
 
-pub fn sound_loop(stop : Arc<Mutex<bool>>, sound_rx : mpsc::Receiver<&str>) {
+pub fn sound_loop(
+    stop : Arc<Mutex<bool>>,
+    sound_rx : mpsc::Receiver<&str>,
+) {
     let mut monster_dies = Sound::new("monster_dies.wav").unwrap();
     let mut monster_spawns = Sound::new("monster_spawns.wav").unwrap();
     let mut player_dies = Sound::new("player_dies.wav").unwrap();
