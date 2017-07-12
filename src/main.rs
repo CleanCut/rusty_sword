@@ -42,11 +42,7 @@ fn main() {
         if quit {
             sleep(Duration::from_millis(50));
             *stop.lock().unwrap() = true;
-        }
-        {
-            if *stop.lock().unwrap() {
-                break;
-            }
+            break;
         }
         // Lock floor first!
         let floor = floor.lock().unwrap();
