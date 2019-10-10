@@ -1,14 +1,18 @@
 pub extern crate rusty_sword;
+extern crate rand;
+
 use rusty_sword::*;
+use rand::distributions::Uniform;
+use rand::prelude::Distribution;
 
 fn main() {
     // To avoid lock contention for this group of objects, we'll follow the rule:
     // - You must have a lock on floor before trying to lock anything else
     // - You must unlock all other locks before (or when) floor gets unlocked
-    let floor        = Arc::new(Mutex::new(Floor::new(60, 30)));
-    let player       = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
+    let floor = Arc::new(Mutex::new(Floor::new(60, 30)));
+    let player = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
-    let monsters     = Arc::new(Mutex::new(Vec::<Monster>::new()));
+    let monsters = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
     // To avoid lock contention, we'll follow the rule:
     // - stop should be locked only when no other objects are locked
@@ -21,29 +25,22 @@ fn main() {
         let player = player.clone();
         let dirty_coords = dirty_coords.clone();
         let monsters = monsters.clone();
-        spawn(move || { render_loop(stop, floor, player, dirty_coords, monsters) } )
+        spawn(move || render_loop(stop, floor, player, dirty_coords, monsters))
     };
 
     // Sound Thread
     let (sound_tx, sound_rx) = mpsc::channel::<&str>();
     let sound_thread = {
-        let stop = stop.clone();
-        spawn(move || { sound_loop(stop, sound_rx) } )
+        spawn(move || sound_loop(sound_rx))
     };
 
     // Game Loop
-    let mut quit = false;
     let mut astdin = async_stdin();
     let mut rng = rand::thread_rng();
     let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
-    loop {
+    'gameloop: loop {
         sleep(Duration::from_millis(10));
-        if quit {
-            sleep(Duration::from_millis(50));
-            *stop.lock().unwrap() = true;
-            break;
-        }
         // Lock floor first!
         let floor = floor.lock().unwrap();
         let mut player = player.lock().unwrap();
@@ -55,18 +52,18 @@ fn main() {
 
         // Player moves?
         let mut player_moved = false;
-        let mut bytebuf : [u8; 1] = [0];
+        let mut bytebuf: [u8; 1] = [0];
         while let Ok(amount) = astdin.read(&mut bytebuf) {
             if amount == 1 {
                 match bytebuf[0] {
-                    27|b'q' => {
-                        quit = true;
-                    },
+                    27 | b'q' => {
+                        break 'gameloop;
+                    }
                     _ => {
                         if let Some(direction) = byte_to_direction(bytebuf[0]) {
                             player_moved = player.travel(direction, &floor, &mut dirty_coords);
                         }
-                    },
+                    }
                 }
             } else {
                 break;
@@ -97,11 +94,8 @@ fn main() {
         // Spawn a new monster!
         spawn_timer.update(delta);
         if spawn_timer.ready {
-            spawn_timer = Timer::from_millis(sample(&mut rng, 1000..5000, 1)[0]);
-            let to_coord = Coord::new(
-                sample(&mut rng, 1..59, 1)[0],
-                sample(&mut rng, 1..29, 1)[0],
-            );
+            spawn_timer = Timer::from_millis(Uniform::new(1000, 5000).sample(&mut rng));
+            let to_coord = Coord::new(Uniform::new(1, 59).sample(&mut rng), Uniform::new(1, 29).sample(&mut rng));
             if to_coord != player.coord {
                 monsters.push(Monster::new(to_coord, &mut rng));
                 sound_tx.send("monster_spawns").unwrap();
@@ -110,16 +104,20 @@ fn main() {
 
         // Did the player die?
         if monsters.iter().any(|monster| monster.coord == player.coord) {
-            quit = true;
             sound_tx.send("player_dies").unwrap();
+            break 'gameloop;
         }
 
         last_instant = current_instant;
     }
 
-    // Wait for other threads to stop before exiting
+    // Game ended
+    //sleep(Duration::from_millis(50));
+    *stop.lock().unwrap() = true;
+    sound_tx.send("stop").unwrap();
+
+    // Wait for other threads to gracefully exit before exiting the main thread
     render_thread.join().unwrap();
     println!("Thanks for playing!");
     sound_thread.join().unwrap();
 }
-

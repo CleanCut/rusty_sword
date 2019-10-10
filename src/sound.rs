@@ -1,28 +1,17 @@
-use ::*;
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread::sleep;
+use std::time::Duration;
 
-pub fn sound_loop(
-    stop : Arc<Mutex<bool>>,
-    sound_rx : mpsc::Receiver<&str>,
-) {
-    let mut monster_dies = Sound::new("monster_dies.wav").unwrap();
-    let mut monster_spawns = Sound::new("monster_spawns.wav").unwrap();
-    let mut player_dies = Sound::new("player_dies.wav").unwrap();
-    loop {
-        sleep(Duration::from_millis(10));
-        {
-            if *stop.lock().unwrap() {
-                break;
-            }
+pub fn sound_loop(sound_rx: mpsc::Receiver<&str>) {
+    let mut audio = rusty_audio::Audio::new();
+    audio.add("monster_dies", "monster_dies.wav");
+    audio.add("monster_spawns", "monster_spawns.wav");
+    audio.add("player_dies", "player_dies.wav");
+    while let Ok(clip) = sound_rx.recv() {
+        if clip == "stop" {
+            break;
         }
-        while let Ok(choice) = sound_rx.try_recv() {
-            match choice {
-                "monster_dies" => monster_dies.play(),
-                "monster_spawns" => monster_spawns.play(),
-                "player_dies" => player_dies.play(),
-                _ => {},
-            }
-        }
+        audio.play(clip);
     }
-    while player_dies.is_playing() {}
+    audio.wait();
 }
-

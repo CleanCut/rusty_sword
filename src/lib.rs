@@ -1,19 +1,16 @@
-pub extern crate ears;
-pub extern crate rand;
-pub extern crate termion;
+extern crate rand;
+extern crate termion;
 
-pub use std::io::{Read, Stdout, stdout, Write};
-pub use std::sync::{Arc, mpsc, Mutex};
+pub use std::io::{stdout, Read, Stdout, Write};
+pub use std::sync::{mpsc, Arc, Mutex};
 pub use std::thread::{sleep, spawn};
 pub use std::time::{Duration, Instant};
 
-pub use ears::{Sound, AudioController};
-pub use rand::{Rng, sample};
 pub use termion::async_stdin;
-pub use termion::color::{Red, Green, Blue, LightWhite, Reset, Color, Fg};
+pub use termion::clear;
+pub use termion::color::{Blue, Color, Fg, Green, LightWhite, Red, Reset};
 pub use termion::input::TermRead;
 pub use termion::raw::{IntoRawMode, RawTerminal};
-pub use termion::clear;
 
 pub mod coord;
 pub mod floor;

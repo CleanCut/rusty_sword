@@ -1,18 +1,18 @@
-use ::*;
+use *;
 
 pub struct Timer {
-    time : Duration,
-    time_left : Duration,
-    pub ready : bool,
+    time: Duration,
+    time_left: Duration,
+    pub ready: bool,
 }
 
 impl Timer {
-    pub fn from_millis(ms : u64) -> Self {
+    pub fn from_millis(ms: u64) -> Self {
         let duration = Duration::from_millis(ms);
         Self {
-            time : duration,
-            time_left : duration,
-            ready : false,
+            time: duration,
+            time_left: duration,
+            ready: false,
         }
     }
 
@@ -21,7 +21,7 @@ impl Timer {
         self.time_left = self.time;
     }
 
-    pub fn update(&mut self, delta : Duration) {
+    pub fn update(&mut self, delta: Duration) {
         if self.ready {
             return;
         }
@@ -32,4 +32,3 @@ impl Timer {
         }
     }
 }
-

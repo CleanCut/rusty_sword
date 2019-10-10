@@ -1,18 +1,19 @@
-use ::*;
+use termion::raw::IntoRawMode;
+use *;
 
 pub fn render_loop(
-    stop         : Arc<Mutex<bool>>,
-    floor        : Arc<Mutex<Floor>>,
-    player       : Arc<Mutex<Player>>,
-    dirty_coords : Arc<Mutex<Vec<Coord>>>,
-    monsters     : Arc<Mutex<Vec<Monster>>>,
+    stop: Arc<Mutex<bool>>,
+    floor: Arc<Mutex<Floor>>,
+    player: Arc<Mutex<Player>>,
+    dirty_coords: Arc<Mutex<Vec<Coord>>>,
+    monsters: Arc<Mutex<Vec<Monster>>>,
 ) {
     let mut screen = &mut stdout().into_raw_mode().unwrap();
     out(screen, termion::cursor::Hide); // Hide the cursor
-    out(screen, termion::clear::All);   // Clear the screen
+    out(screen, termion::clear::All); // Clear the screen
 
     // Draw the entire floor
-    curs(screen, Coord::new(0,0));
+    curs(screen, Coord::new(0, 0));
     {
         let floor = floor.lock().unwrap();
         for row in &floor.tiles {
@@ -62,8 +63,10 @@ pub fn render_loop(
         }
         // Player Score
         let score_string = format!("Score: {}", player.score);
-        curs(screen, Coord::new((floor.cols - score_string.len()) as u16,
-                                floor.rows as u16));
+        curs(
+            screen,
+            Coord::new((floor.cols - score_string.len()) as u16, floor.rows as u16),
+        );
         out(screen, Fg(Blue));
         out(screen, score_string);
         out(screen, Fg(Reset));
@@ -95,10 +98,10 @@ pub fn render_loop(
     screen.flush().unwrap();
 }
 
-fn out<S: ToString>(screen : &mut RawTerminal<Stdout>, output : S) {
+fn out<S: ToString>(screen: &mut RawTerminal<Stdout>, output: S) {
     write!(*screen, "{}", output.to_string()).unwrap();
 }
 
-fn curs(screen : &mut RawTerminal<Stdout>, coord : Coord) {
-    out(screen, termion::cursor::Goto(coord.col+1, coord.row+1));
+fn curs(screen: &mut RawTerminal<Stdout>, coord: Coord) {
+    out(screen, termion::cursor::Goto(coord.col + 1, coord.row + 1));
 }

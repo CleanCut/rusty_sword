@@ -1,38 +1,40 @@
-use ::*;
+use *;
 
-pub fn sword_symbol(direction : Direction) -> String {
+pub fn sword_symbol(direction: Direction) -> String {
     match direction {
-        Up    => "⤉".to_string(), // U-2909
-        Down  => "⤈".to_string(), // U-2908
-        Left  => "↢".to_string(), // U-21a2
+        Up => "⤉".to_string(),    // U-2909
+        Down => "⤈".to_string(),  // U-2908
+        Left => "↢".to_string(),  // U-21a2
         Right => "↣".to_string(), // U-21a3
     }
 }
 
 pub struct Player {
-    pub coord : Coord,
-    pub facing : Direction,
-    pub sword_coord : Coord,
-    pub symbol : String,
-    pub dirty : bool,
-    pub score : u64,
+    pub coord: Coord,
+    pub facing: Direction,
+    pub sword_coord: Coord,
+    pub symbol: String,
+    pub dirty: bool,
+    pub score: u64,
 }
 
 impl Player {
-    pub fn new(coord : Coord) -> Self {
+    pub fn new(coord: Coord) -> Self {
         Self {
-            coord : coord,
-            facing : Right,
-            sword_coord : coord.to_the(Right),
-            symbol : String::from("☥"), // U-2625
-            dirty : true,
-            score : 0,
+            coord: coord,
+            facing: Right,
+            sword_coord: coord.to_the(Right),
+            symbol: String::from("☥"), // U-2625
+            dirty: true,
+            score: 0,
         }
     }
-    pub fn travel(&mut self,
-                  direction : Direction,
-                  floor : &Floor,
-                  dirty_coords : &mut Vec<Coord>) -> bool {
+    pub fn travel(
+        &mut self,
+        direction: Direction,
+        floor: &Floor,
+        dirty_coords: &mut Vec<Coord>,
+    ) -> bool {
         let mut moved = false;
         // Do I change direction?
         if self.facing != direction {
@@ -55,4 +57,3 @@ impl Player {
         return moved;
     }
 }
-
