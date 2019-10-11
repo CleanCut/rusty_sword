@@ -1,13 +1,14 @@
-
-use std::sync::{Arc, Mutex};
-use crate::floor::Floor;
-use crate::player::{Player, sword_symbol};
 use crate::coord::Coord;
+use crate::floor::Floor;
 use crate::monster::Monster;
-use std::io::{stdout, Write, Stdout};
-use std::time::Duration;
+use crate::player::{sword_symbol, Player};
+use crossterm::{
+    style, AlternateScreen, ClearType, Color, Crossterm, RawScreen, Result, TerminalCursor,
+};
+use std::io::{stdout, Stdout, Write};
+use std::sync::{Arc, Mutex};
 use std::thread::sleep;
-use crossterm::{style, AlternateScreen, ClearType, Color, Crossterm, Result, RawScreen, TerminalCursor};
+use std::time::Duration;
 
 pub fn render_loop(
     stop: Arc<Mutex<bool>>,
@@ -80,7 +81,10 @@ pub fn render_loop(
 
         // Game Title
         cursor.goto(0, floor.rows as u16);
-        print!("{}", style("Rusty Sword - Game of Infamy!").with(Color::White));
+        print!(
+            "{}",
+            style("Rusty Sword - Game of Infamy!").with(Color::White)
+        );
     }
 
     // Nice cleanup: Move cursor below the floor, so we can see how we finished

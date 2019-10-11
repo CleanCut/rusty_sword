@@ -1,17 +1,17 @@
+use crossterm::{InputEvent, KeyEvent, RawScreen, TerminalInput};
 use rand::distributions::Uniform;
 use rand::prelude::Distribution;
-use rusty_sword::player::Player;
-use std::sync::{Mutex, Arc, mpsc};
+use rusty_sword::coord::{key_to_direction, Coord};
 use rusty_sword::floor::Floor;
-use rusty_sword::coord::{Coord, key_to_direction};
 use rusty_sword::monster::Monster;
+use rusty_sword::player::Player;
 use rusty_sword::render::render_loop;
 use rusty_sword::sound::sound_loop;
-use std::thread::{spawn, sleep};
 use rusty_sword::timer::Timer;
-use std::time::{Instant, Duration};
-use std::io::{Read, stdin};
-use crossterm::{InputEvent, KeyEvent, TerminalInput, RawScreen};
+use std::io::{stdin, Read};
+use std::sync::{mpsc, Arc, Mutex};
+use std::thread::{sleep, spawn};
+use std::time::{Duration, Instant};
 
 fn main() {
     // To avoid lock contention for this group of objects, we'll follow the rule:
@@ -38,9 +38,7 @@ fn main() {
 
     // Sound Thread
     let (sound_tx, sound_rx) = mpsc::channel::<&str>();
-    let sound_thread = {
-        spawn(move || sound_loop(sound_rx))
-    };
+    let sound_thread = { spawn(move || sound_loop(sound_rx)) };
 
     // Game Loop
     sleep(Duration::from_millis(100));
@@ -65,7 +63,8 @@ fn main() {
         loop {
             if let Some(event) = reader.next() {
                 match event {
-                    InputEvent::Keyboard(KeyEvent::Char('q')) | InputEvent::Keyboard(KeyEvent::Esc) => break 'gameloop,
+                    InputEvent::Keyboard(KeyEvent::Char('q'))
+                    | InputEvent::Keyboard(KeyEvent::Esc) => break 'gameloop,
                     InputEvent::Keyboard(k) => {
                         if let Some(direction) = key_to_direction(k) {
                             player_moved = player.travel(direction, &floor, &mut dirty_coords);
@@ -73,7 +72,6 @@ fn main() {
                     }
                     _ => {}
                 }
-
             } else {
                 break;
             }
@@ -104,7 +102,10 @@ fn main() {
         spawn_timer.update(delta);
         if spawn_timer.ready {
             spawn_timer = Timer::from_millis(Uniform::new(1000, 5000).sample(&mut rng));
-            let to_coord = Coord::new(Uniform::new(1, 59).sample(&mut rng), Uniform::new(1, 29).sample(&mut rng));
+            let to_coord = Coord::new(
+                Uniform::new(1, 59).sample(&mut rng),
+                Uniform::new(1, 29).sample(&mut rng),
+            );
             if to_coord != player.coord {
                 monsters.push(Monster::new(to_coord, &mut rng));
                 sound_tx.send("monster_spawns").unwrap();

@@ -1,4 +1,4 @@
-use crate::coord::{Direction, Coord};
+use crate::coord::{Coord, Direction};
 use crate::floor::Floor;
 
 pub fn sword_symbol(direction: Direction) -> String {
