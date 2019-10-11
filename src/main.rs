@@ -1,9 +1,17 @@
-pub extern crate rusty_sword;
-extern crate rand;
-
-use rusty_sword::*;
 use rand::distributions::Uniform;
 use rand::prelude::Distribution;
+use rusty_sword::player::Player;
+use std::sync::{Mutex, Arc, mpsc};
+use rusty_sword::floor::Floor;
+use rusty_sword::coord::{Coord, key_to_direction};
+use rusty_sword::monster::Monster;
+use rusty_sword::render::render_loop;
+use rusty_sword::sound::sound_loop;
+use std::thread::{spawn, sleep};
+use rusty_sword::timer::Timer;
+use std::time::{Instant, Duration};
+use std::io::{Read, stdin};
+use crossterm::{InputEvent, KeyEvent, TerminalInput, RawScreen};
 
 fn main() {
     // To avoid lock contention for this group of objects, we'll follow the rule:
@@ -35,7 +43,9 @@ fn main() {
     };
 
     // Game Loop
-    let mut astdin = async_stdin();
+    sleep(Duration::from_millis(100));
+    let mut input = TerminalInput::new();
+    let mut reader = input.read_async();
     let mut rng = rand::thread_rng();
     let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
@@ -52,19 +62,18 @@ fn main() {
 
         // Player moves?
         let mut player_moved = false;
-        let mut bytebuf: [u8; 1] = [0];
-        while let Ok(amount) = astdin.read(&mut bytebuf) {
-            if amount == 1 {
-                match bytebuf[0] {
-                    27 | b'q' => {
-                        break 'gameloop;
-                    }
-                    _ => {
-                        if let Some(direction) = byte_to_direction(bytebuf[0]) {
+        loop {
+            if let Some(event) = reader.next() {
+                match event {
+                    InputEvent::Keyboard(KeyEvent::Char('q')) | InputEvent::Keyboard(KeyEvent::Esc) => break 'gameloop,
+                    InputEvent::Keyboard(k) => {
+                        if let Some(direction) = key_to_direction(k) {
                             player_moved = player.travel(direction, &floor, &mut dirty_coords);
                         }
                     }
+                    _ => {}
                 }
+
             } else {
                 break;
             }

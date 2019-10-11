@@ -1,6 +1,7 @@
 use rand::distributions::Uniform;
 use rand::prelude::{Distribution, IteratorRandom, ThreadRng};
-use {Coord, Timer};
+use crate::coord::Coord;
+use crate::timer::Timer;
 
 pub struct Monster {
     pub coord: Coord,

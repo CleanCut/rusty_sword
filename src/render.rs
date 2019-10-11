@@ -1,5 +1,13 @@
-use termion::raw::IntoRawMode;
-use *;
+
+use std::sync::{Arc, Mutex};
+use crate::floor::Floor;
+use crate::player::{Player, sword_symbol};
+use crate::coord::Coord;
+use crate::monster::Monster;
+use std::io::{stdout, Write, Stdout};
+use std::time::Duration;
+use std::thread::sleep;
+use crossterm::{style, AlternateScreen, ClearType, Color, Crossterm, Result, RawScreen, TerminalCursor};
 
 pub fn render_loop(
     stop: Arc<Mutex<bool>>,
@@ -8,43 +16,43 @@ pub fn render_loop(
     dirty_coords: Arc<Mutex<Vec<Coord>>>,
     monsters: Arc<Mutex<Vec<Monster>>>,
 ) {
-    let mut screen = &mut stdout().into_raw_mode().unwrap();
-    out(screen, termion::cursor::Hide); // Hide the cursor
-    out(screen, termion::clear::All); // Clear the screen
+    let _raw = RawScreen::into_raw_mode().unwrap();
+    let crossterm = Crossterm::new();
+    let terminal = crossterm.terminal();
+    let cursor = crossterm.cursor();
 
+    terminal.clear(ClearType::All).unwrap();
+
+    cursor.hide().unwrap();
     // Draw the entire floor
-    curs(screen, Coord::new(0, 0));
+    cursor.goto(0, 0);
     {
         let floor = floor.lock().unwrap();
         for row in &floor.tiles {
             for tile in row {
                 if let Some(ref wall) = tile.wall {
-                    out(screen, wall);
+                    print!("{}", wall);
                 } else {
-                    out(screen, " ");
+                    print!(" ");
                 }
             }
-            out(screen, "\r\n");
+            print!("\r\n");
         }
     }
 
-    // Render Loop
     loop {
         sleep(Duration::from_millis(10));
-        {
-            if *stop.lock().unwrap() {
-                break;
-            }
+        if *stop.lock().unwrap() {
+            break;
         }
-
         // Lock floor first...
         let floor = floor.lock().unwrap();
 
         // Redraw any dirty coordinates with floor tiles
         let mut dirty_coords = dirty_coords.lock().unwrap();
         for coord in dirty_coords.drain(..) {
-            curs(screen, coord);
-            out(screen, floor.get_symbol(coord));
+            cursor.goto(coord.col, coord.row);
+            print!("{}", floor.get_symbol(coord));
         }
 
         // Render Player
@@ -52,56 +60,38 @@ pub fn render_loop(
         if player.dirty {
             player.dirty = false;
             // Player's sword
-            curs(screen, player.sword_coord);
-            out(screen, Fg(Red));
-            out(screen, sword_symbol(player.facing));
+            cursor.goto(player.sword_coord.col, player.sword_coord.row);
+            print!("{}", style(sword_symbol(player.facing)).with(Color::Red));
             // Player himself
-            curs(screen, player.coord);
-            out(screen, Fg(Blue));
-            out(screen, &player.symbol);
-            out(screen, Fg(Reset));
+            cursor.goto(player.coord.col, player.coord.row);
+            print!("{}", style(&player.symbol).with(Color::Blue));
         }
         // Player Score
         let score_string = format!("Score: {}", player.score);
-        curs(
-            screen,
-            Coord::new((floor.cols - score_string.len()) as u16, floor.rows as u16),
-        );
-        out(screen, Fg(Blue));
-        out(screen, score_string);
-        out(screen, Fg(Reset));
+        cursor.goto((floor.cols - score_string.len()) as u16, floor.rows as u16);
+        print!("{}", style(score_string).with(Color::Blue));
 
         // Render Monsters
         let monsters = monsters.lock().unwrap();
         for monster in monsters.iter() {
-            curs(screen, monster.coord);
-            out(screen, Fg(Green));
-            out(screen, &monster.symbol);
-            out(screen, Fg(Reset));
+            cursor.goto(monster.coord.col, monster.coord.row);
+            print!("{}", style(&monster.symbol).with(Color::Green));
         }
 
         // Game Title
-        curs(screen, Coord::new(0, floor.rows as u16));
-        out(screen, Fg(LightWhite));
-        out(screen, "Rusty Sword - Game of Infamy!");
-        out(screen, Fg(Reset));
-
-        screen.flush().unwrap();
+        cursor.goto(0, floor.rows as u16);
+        print!("{}", style("Rusty Sword - Game of Infamy!").with(Color::White));
     }
 
     // Nice cleanup: Move cursor below the floor, so we can see how we finished
     {
         let floor = floor.lock().unwrap();
-        curs(screen, Coord::new(0, (floor.rows + 2) as u16));
+        cursor.goto(0, (floor.rows + 2) as u16);
+        RawScreen::disable_raw_mode().unwrap();
     }
-    out(screen, termion::cursor::Show); // Show the cursor again
-    screen.flush().unwrap();
+    cursor.show().unwrap();
 }
 
-fn out<S: ToString>(screen: &mut RawTerminal<Stdout>, output: S) {
-    write!(*screen, "{}", output.to_string()).unwrap();
-}
-
-fn curs(screen: &mut RawTerminal<Stdout>, coord: Coord) {
-    out(screen, termion::cursor::Goto(coord.col + 1, coord.row + 1));
-}
+//fn out<S: ToString>(screen: &mut RawTerminal<Stdout>, output: S) {
+//    //write!(*screen, "{}", output.to_string()).unwrap();
+//}

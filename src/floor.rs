@@ -1,4 +1,4 @@
-use *;
+use crate::coord::Coord;
 
 #[derive(Copy, Clone)]
 pub struct Tile {

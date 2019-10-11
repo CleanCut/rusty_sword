@@ -1,4 +1,4 @@
-use *;
+use std::time::Duration;
 
 pub struct Timer {
     time: Duration,

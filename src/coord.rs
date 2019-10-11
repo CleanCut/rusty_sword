@@ -1,6 +1,6 @@
-pub use self::Direction::*;
+use crossterm::KeyEvent;
 
-#[derive(Copy, Clone, PartialEq, Eq)]
+#[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Direction {
     Up,
     Down,
@@ -8,12 +8,12 @@ pub enum Direction {
     Right,
 }
 
-pub fn byte_to_direction(byte: u8) -> Option<Direction> {
-    match byte {
-        b'w' | b',' => Some(Up),
-        b's' | b'o' => Some(Down),
-        b'a' => Some(Left),
-        b'd' | b'e' => Some(Right),
+pub fn key_to_direction(key: KeyEvent) -> Option<Direction> {
+    match key {
+        KeyEvent::Char('w') | KeyEvent::Up | KeyEvent::Char(',') => Some(Direction::Up),
+        KeyEvent::Char('s') | KeyEvent::Down | KeyEvent::Char('o') => Some(Direction::Down),
+        KeyEvent::Char('a') | KeyEvent::Left => Some(Direction::Left),
+        KeyEvent::Char('d') | KeyEvent::Right | KeyEvent::Char('e') => Some(Direction::Right),
         _ => None,
     }
 }
@@ -30,10 +30,10 @@ impl Coord {
     }
     pub fn to_the(&self, direction: Direction) -> Coord {
         match direction {
-            Up => Coord::new(self.col, self.row - 1),
-            Down => Coord::new(self.col, self.row + 1),
-            Left => Coord::new(self.col - 1, self.row),
-            Right => Coord::new(self.col + 1, self.row),
+            Direction::Up => Coord::new(self.col, self.row - 1),
+            Direction::Down => Coord::new(self.col, self.row + 1),
+            Direction::Left => Coord::new(self.col - 1, self.row),
+            Direction::Right => Coord::new(self.col + 1, self.row),
         }
     }
     pub fn to(&self, target: Coord) -> Coord {
@@ -46,15 +46,15 @@ impl Coord {
         let row_diff = self.row as i32 - target.row as i32;
         if col_diff.abs() > row_diff.abs() {
             if col_diff < 0 {
-                return self.to_the(Right);
+                return self.to_the(Direction::Right);
             } else {
-                return self.to_the(Left);
+                return self.to_the(Direction::Left);
             }
         } else {
             if row_diff < 0 {
-                return self.to_the(Down);
+                return self.to_the(Direction::Down);
             } else {
-                return self.to_the(Up);
+                return self.to_the(Direction::Up);
             }
         }
     }
