@@ -6,7 +6,7 @@ use rusty_sword::floor::Floor;
 use rusty_sword::monster::Monster;
 use rusty_sword::player::Player;
 use rusty_sword::render::render_loop;
-use rusty_sword::sound::sound_loop;
+use rusty_sword::audio::audio_loop;
 use rusty_sword::timer::Timer;
 use std::sync::{Arc, Mutex};
 use std::thread::{sleep, spawn};
@@ -34,9 +34,9 @@ fn main() {
         spawn(move || render_loop(stop_rx, floor, player, dirty_coords, monsters))
     };
 
-    // Sound Thread
-    let (sound_tx, sound_rx) = unbounded::<&str>();
-    let sound_thread = { spawn(move || sound_loop(sound_rx)) };
+    // Audio Thread
+    let (clip_tx, clip_rx) = unbounded::<&str>();
+    let audio_thread = { spawn(move || audio_loop(clip_rx)) };
 
     // Game Loop
     sleep(Duration::from_millis(100));
@@ -93,7 +93,7 @@ fn main() {
         let num_killed = num_monsters - monsters.len();
         if num_killed > 0 {
             player.score += num_killed as u64;
-            sound_tx.send("monster_dies").unwrap();
+            clip_tx.send("monster_dies").unwrap();
         }
 
         // Spawn a new monster!
@@ -106,13 +106,13 @@ fn main() {
             );
             if to_coord != player.coord {
                 monsters.push(Monster::new(to_coord, &mut rng));
-                sound_tx.send("monster_spawns").unwrap();
+                clip_tx.send("monster_spawns").unwrap();
             }
         }
 
         // Did the player die?
         if monsters.iter().any(|monster| monster.coord == player.coord) {
-            sound_tx.send("player_dies").unwrap();
+            clip_tx.send("player_dies").unwrap();
             break 'gameloop;
         }
 
@@ -122,10 +122,10 @@ fn main() {
     // Game ended
     //sleep(Duration::from_millis(50));
     stop_tx.send(()).unwrap();
-    sound_tx.send("stop").unwrap();
+    clip_tx.send("stop").unwrap();
 
     // Wait for other threads to gracefully exit before exiting the main thread
     render_thread.join().unwrap();
     println!("Thanks for playing!");
-    sound_thread.join().unwrap();
+    audio_thread.join().unwrap();
 }
