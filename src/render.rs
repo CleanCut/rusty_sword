@@ -3,7 +3,7 @@ use crate::floor::Floor;
 use crate::monster::Monster;
 use crate::player::{sword_symbol, Player};
 use crossbeam::Receiver;
-use crossterm::{style, AlternateScreen, ClearType, Color, Crossterm, RawScreen};
+use crossterm::{style, AlternateScreen, ClearType, Color, Crossterm};
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
@@ -15,7 +15,7 @@ pub fn render_loop(
     dirty_coords: Arc<Mutex<Vec<Coord>>>,
     monsters: Arc<Mutex<Vec<Monster>>>,
 ) {
-    let _raw = RawScreen::into_raw_mode().unwrap();
+    let _alt = AlternateScreen::to_alternate(true).unwrap();
     let crossterm = Crossterm::new();
     let terminal = crossterm.terminal();
     let cursor = crossterm.cursor();
@@ -93,7 +93,6 @@ pub fn render_loop(
     {
         let floor = floor.lock().unwrap();
         cursor.goto(0, (floor.rows + 2) as u16).unwrap();
-        RawScreen::disable_raw_mode().unwrap();
     }
     cursor.show().unwrap();
 }
