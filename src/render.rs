@@ -3,9 +3,7 @@ use crate::floor::Floor;
 use crate::monster::Monster;
 use crate::player::{sword_symbol, Player};
 use crossbeam::Receiver;
-use crossterm::{
-    style, AlternateScreen, ClearType, Color, Crossterm, RawScreen,
-};
+use crossterm::{style, AlternateScreen, ClearType, Color, Crossterm, RawScreen};
 use std::sync::{Arc, Mutex};
 use std::thread::sleep;
 use std::time::Duration;
@@ -61,7 +59,9 @@ pub fn render_loop(
         if player.dirty {
             player.dirty = false;
             // Player's sword
-            cursor.goto(player.sword_coord.col, player.sword_coord.row).unwrap();
+            cursor
+                .goto(player.sword_coord.col, player.sword_coord.row)
+                .unwrap();
             print!("{}", style(sword_symbol(player.facing)).with(Color::Red));
             // Player himself
             cursor.goto(player.coord.col, player.coord.row).unwrap();
@@ -69,7 +69,9 @@ pub fn render_loop(
         }
         // Player Score
         let score_string = format!("Score: {}", player.score);
-        cursor.goto((floor.cols - score_string.len()) as u16, floor.rows as u16).unwrap();
+        cursor
+            .goto((floor.cols - score_string.len()) as u16, floor.rows as u16)
+            .unwrap();
         print!("{}", style(score_string).with(Color::Blue));
 
         // Render Monsters

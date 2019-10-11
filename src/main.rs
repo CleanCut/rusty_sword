@@ -1,17 +1,17 @@
+use crossbeam::unbounded;
 use crossterm::{InputEvent, KeyEvent, TerminalInput};
 use rand::distributions::Uniform;
 use rand::prelude::Distribution;
+use rusty_sword::audio::audio_loop;
 use rusty_sword::coord::{key_to_direction, Coord};
 use rusty_sword::floor::Floor;
 use rusty_sword::monster::Monster;
 use rusty_sword::player::Player;
 use rusty_sword::render::render_loop;
-use rusty_sword::audio::audio_loop;
 use rusty_sword::timer::Timer;
 use std::sync::{Arc, Mutex};
 use std::thread::{sleep, spawn};
 use std::time::{Duration, Instant};
-use crossbeam::unbounded;
 
 fn main() {
     // To avoid lock contention for this group of objects, we'll follow the rule:

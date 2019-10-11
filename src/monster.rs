@@ -12,7 +12,7 @@ pub struct Monster {
 impl Monster {
     pub fn new(coord: Coord, rng: &mut ThreadRng) -> Self {
         let monster_symbols = vec![
-            "·", // U-00b7
+            "·",  // U-00b7
             "☨", // U-2628
             "♄", // U-2644
             "⟟", // U-27df
