@@ -1,7 +1,7 @@
 use crate::coord::Coord;
 use crate::floor::Floor;
 use crate::monster::Monster;
-use crate::player::{sword_symbol, Player};
+use crate::player::Player;
 use crossbeam::Receiver;
 use crossterm::{style, AlternateScreen, ClearType, Color, Crossterm};
 use std::sync::{Arc, Mutex};
@@ -29,7 +29,7 @@ pub fn render_loop(
         let floor = floor.lock().unwrap();
         for row in &floor.tiles {
             for tile in row {
-                if let Some(ref wall) = tile.wall {
+                if let Some(wall) = tile.wall {
                     print!("{}", wall);
                 } else {
                     print!(" ");
@@ -62,7 +62,7 @@ pub fn render_loop(
             cursor
                 .goto(player.sword_coord.col, player.sword_coord.row)
                 .unwrap();
-            print!("{}", style(sword_symbol(player.facing)).with(Color::Red));
+            print!("{}", style(player.sword_symbol()).with(Color::Red));
             // Player himself
             cursor.goto(player.coord.col, player.coord.row).unwrap();
             print!("{}", style(&player.symbol).with(Color::Blue));
@@ -97,6 +97,3 @@ pub fn render_loop(
     cursor.show().unwrap();
 }
 
-//fn out<S: ToString>(screen: &mut RawTerminal<Stdout>, output: S) {
-//    //write!(*screen, "{}", output.to_string()).unwrap();
-//}

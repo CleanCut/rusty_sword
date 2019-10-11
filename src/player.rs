@@ -1,15 +1,6 @@
 use crate::coord::{Coord, Direction};
 use crate::floor::Floor;
 
-pub fn sword_symbol(direction: Direction) -> String {
-    match direction {
-        Direction::Up => "⤉".to_string(),    // U-2909
-        Direction::Down => "⤈".to_string(),  // U-2908
-        Direction::Left => "↢".to_string(),  // U-21a2
-        Direction::Right => "↣".to_string(), // U-21a3
-    }
-}
-
 pub struct Player {
     pub coord: Coord,
     pub facing: Direction,
@@ -28,6 +19,14 @@ impl Player {
             symbol: String::from("☥"), // U-2625
             dirty: true,
             score: 0,
+        }
+    }
+    pub fn sword_symbol(&self) -> String {
+        match self.facing {
+            Direction::Up => "⤉".to_string(),    // U-2909
+            Direction::Down => "⤈".to_string(),  // U-2908
+            Direction::Left => "↢".to_string(),  // U-21a2
+            Direction::Right => "↣".to_string(), // U-21a3
         }
     }
     pub fn travel(
