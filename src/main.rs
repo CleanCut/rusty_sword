@@ -1,4 +1,4 @@
-use crossterm::{InputEvent, KeyEvent, RawScreen, TerminalInput};
+use crossterm::{InputEvent, KeyEvent, TerminalInput};
 use rand::distributions::Uniform;
 use rand::prelude::Distribution;
 use rusty_sword::coord::{key_to_direction, Coord};
@@ -8,10 +8,10 @@ use rusty_sword::player::Player;
 use rusty_sword::render::render_loop;
 use rusty_sword::sound::sound_loop;
 use rusty_sword::timer::Timer;
-use std::io::{stdin, Read};
-use std::sync::{mpsc, Arc, Mutex};
+use std::sync::{Arc, Mutex};
 use std::thread::{sleep, spawn};
 use std::time::{Duration, Instant};
+use crossbeam::unbounded;
 
 fn main() {
     // To avoid lock contention for this group of objects, we'll follow the rule:
@@ -22,27 +22,25 @@ fn main() {
     let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
     let monsters = Arc::new(Mutex::new(Vec::<Monster>::new()));
 
-    // To avoid lock contention, we'll follow the rule:
-    // - stop should be locked only when no other objects are locked
-    let stop = Arc::new(Mutex::new(false));
+    // We'll use this to let the render thread know we're done.
+    let (stop_tx, stop_rx) = unbounded::<()>();
 
     // Render Thread
     let render_thread = {
-        let stop = stop.clone();
         let floor = floor.clone();
         let player = player.clone();
         let dirty_coords = dirty_coords.clone();
         let monsters = monsters.clone();
-        spawn(move || render_loop(stop, floor, player, dirty_coords, monsters))
+        spawn(move || render_loop(stop_rx, floor, player, dirty_coords, monsters))
     };
 
     // Sound Thread
-    let (sound_tx, sound_rx) = mpsc::channel::<&str>();
+    let (sound_tx, sound_rx) = unbounded::<&str>();
     let sound_thread = { spawn(move || sound_loop(sound_rx)) };
 
     // Game Loop
     sleep(Duration::from_millis(100));
-    let mut input = TerminalInput::new();
+    let input = TerminalInput::new();
     let mut reader = input.read_async();
     let mut rng = rand::thread_rng();
     let mut spawn_timer = Timer::from_millis(1000);
@@ -123,7 +121,7 @@ fn main() {
 
     // Game ended
     //sleep(Duration::from_millis(50));
-    *stop.lock().unwrap() = true;
+    stop_tx.send(()).unwrap();
     sound_tx.send("stop").unwrap();
 
     // Wait for other threads to gracefully exit before exiting the main thread

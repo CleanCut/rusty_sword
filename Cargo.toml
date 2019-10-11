@@ -5,6 +5,7 @@ authors = ["Nathan Stocks <nathan.stocks@gmail.com>"]
 edition = "2018"
 
 [dependencies]
+crossbeam = "0.7.2"
 crossterm = "0.11.1"
 rand = "0.7.2"
 rusty_audio = "1.1.0"
