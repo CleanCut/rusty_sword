@@ -96,4 +96,3 @@ pub fn render_loop(
     }
     cursor.show().unwrap();
 }
-

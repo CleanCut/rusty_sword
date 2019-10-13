@@ -46,15 +46,15 @@ impl Coord {
         let row_diff = self.row as i32 - target.row as i32;
         if col_diff.abs() > row_diff.abs() {
             if col_diff < 0 {
-                return self.to_the(Direction::Right);
+                self.to_the(Direction::Right)
             } else {
-                return self.to_the(Direction::Left);
+                self.to_the(Direction::Left)
             }
         } else {
             if row_diff < 0 {
-                return self.to_the(Direction::Down);
+                self.to_the(Direction::Down)
             } else {
-                return self.to_the(Direction::Up);
+                self.to_the(Direction::Up)
             }
         }
     }
