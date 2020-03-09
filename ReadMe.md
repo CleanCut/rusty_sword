@@ -1,22 +1,36 @@
-Rusty Sword: Game of Infamy!
-============================
+# Rusty Sword: Game of Infamy!
 
-Rusty Sword is a terminal-based arcade game used to teach the [Rust](https://www.rust-lang.org/)
-programming language.
+Rusty Sword is a terminal-based arcade game used to demonstrate the [Rust] programming language
+through live-coding presentations. It has been tested on macOS, Linux, and Windows.
 
-### History
+## To play
 
-- 2019 - Updated to Rust 2018 edition, overhauled the code with the intent to use it to teach a 
-  hands-on systems programming  course
-- 2017 - Used this project for my conference talk _Rusty Sword: Game of Infamy!  ***Live-code a game
-  in Rust in 45 minutes.***_
+- [Install Rust] if you don't have it already.
+- If you are on Linux, install the [Linux dependencies] listed for [rusty_audio]
+- Clone the "Rusty Sword" repository, and change directory to it with your terminal. For example:
+```
+git clone git@github.com:CleanCut/rusty_sword.git
+```
+- Build and run to play!
+```
+cargo run --release
+```
 
-**Install Dependencies**
+## Gameplay instructions
 
-You should have [Rust installed](https://www.rust-lang.org/tools/install) and up-to-date (run 
-`rustup update` if you haven't updated recently).
+- The `☥` represents you, and the arrow symbol next to you is your rusty sword.
+- Use arrow keys or WASD keys to move. Your sword will always point in the direction you are moving.
+  (You are not particularly skilled at swordfighting, apparently).
+- Monsters will attempt to eat you.  If they touch you, they will succeed and the game will be over.
+- Touching a monster with your rusty sword will instantly kill it (naturally, since monsters are
+  unsafe).
+- Have fun!
 
-- This project should run on macOS and Windows without any additional dependencies.
+## Screencast (minus audio)
 
-- If you are on Linux, then please 
-  [install the dependencies listed for rusty_audio](https://github.com/CleanCut/rusty_audio)
+[![asciicast](https://asciinema.org/a/308544.svg)](https://asciinema.org/a/308544)
+
+[Install Rust]: https://www.rust-lang.org/tools/install
+[Linux dependencies]: https://github.com/CleanCut/rusty_audio#dependencies-on-linux
+[Rust]: https://www.rust-lang.org/
+[rusty_audio]: https://github.com/CleanCut/rusty_audio
