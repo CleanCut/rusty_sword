@@ -25,8 +25,8 @@ impl Timer {
         if self.ready {
             return;
         }
-        if let Some(result) = self.time_left.checked_sub(delta) {
-            self.time_left = result;
+        if let Some(duration) = self.time_left.checked_sub(delta) {
+            self.time_left = duration;
         } else {
             self.ready = true;
         }

@@ -26,7 +26,7 @@ pub struct Coord {
 
 impl Coord {
     pub fn new(col: u16, row: u16) -> Self {
-        Self { col: col, row: row }
+        Self { col, row }
     }
     pub fn to_the(&self, direction: Direction) -> Coord {
         match direction {

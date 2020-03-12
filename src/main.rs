@@ -19,7 +19,8 @@ fn main() {
 
     let mut world = World::new();
 
-    // We'll use this to let the render thread know we're done.
+    // Make a channel to send the world to the render thread, and a channel to receive it back
+    // This is a silly design, we can demonstrate using channels for thread communication. :-P
     let (render_tx, render_rx) = bounded::<World>(0);
     let (main_tx, main_rx) = bounded::<World>(0);
 
@@ -105,12 +106,14 @@ fn main() {
             break 'gameloop;
         }
 
-        // Give the whole world to the renderer - we're just having fun with channels, we're not
-        // getting any performance gains since the main and render thread only run when they've got
-        // access to the world
+        // Give the whole world to the renderer
         render_tx.send(world).unwrap();
+        // Get the whole world back
         world = main_rx.recv().unwrap();
-        sleep(Duration::from_millis(10));
+        // Don't exceed ~60/fps
+        if let Some(t) = Duration::from_secs_f64(1. / 60.).checked_sub(last_instant.elapsed()) {
+            sleep(t);
+        }
     }
 
     // Close the render_tx channel, which will trigger the render thread to exit
