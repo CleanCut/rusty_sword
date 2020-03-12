@@ -7,7 +7,7 @@ pub struct Floor {
 }
 
 impl Floor {
-    pub fn new(cols: usize, rows: usize) -> Self {
+    pub fn new(rows: usize, cols: usize) -> Self {
         // Tiles to use
         let horizontal = "─"; // U-2500
         let vertical = "│"; // U-2502

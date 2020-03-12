@@ -11,10 +11,10 @@ pub struct World {
 }
 
 impl World {
-    pub fn new() -> Self {
+    pub fn new(rows: usize, cols: usize) -> Self {
         Self {
-            floor: Floor::new(60, 30),
-            player: Player::new(Coord::new(30, 15)),
+            floor: Floor::new(rows, cols),
+            player: Player::new(Coord::new((rows / 2) as u16, (cols / 2) as u16)),
             dirty_coords: Vec::<Coord>::new(),
             monsters: Vec::<Monster>::new(),
         }

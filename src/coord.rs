@@ -20,23 +20,23 @@ pub fn key_to_direction(key: KeyEvent) -> Option<Direction> {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Coord {
-    pub col: u16,
     pub row: u16,
+    pub col: u16,
 }
 
 impl Coord {
-    pub fn new(col: u16, row: u16) -> Self {
-        Self { col, row }
+    pub fn new(row: u16, col: u16) -> Self {
+        Self { row, col }
     }
-    pub fn to_the(&self, direction: Direction) -> Coord {
+    pub fn to_the(&self, direction: Direction) -> Self {
         match direction {
-            Direction::Up => Coord::new(self.col, self.row - 1),
-            Direction::Down => Coord::new(self.col, self.row + 1),
-            Direction::Left => Coord::new(self.col - 1, self.row),
-            Direction::Right => Coord::new(self.col + 1, self.row),
+            Direction::Up => Self::new(self.row - 1, self.col),
+            Direction::Down => Self::new(self.row + 1, self.col),
+            Direction::Left => Self::new(self.row, self.col - 1),
+            Direction::Right => Self::new(self.row, self.col + 1),
         }
     }
-    pub fn to(&self, target: Coord) -> Coord {
+    pub fn to(&self, target: Self) -> Self {
         // Are we already there?
         if *self == target {
             return *self;
