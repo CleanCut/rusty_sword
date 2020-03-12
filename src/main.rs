@@ -8,7 +8,7 @@ use rusty_sword::monster::Monster;
 use rusty_sword::render::render_loop;
 use rusty_sword::timer::Timer;
 use rusty_sword::world::World;
-use std::thread::{sleep, spawn};
+use std::thread;
 use std::time::{Duration, Instant};
 
 fn main() {
@@ -25,7 +25,7 @@ fn main() {
     let (main_tx, main_rx) = bounded::<World>(0);
 
     // Render Thread
-    let render_thread = { spawn(move || render_loop(render_rx, main_tx)) };
+    let render_thread = { thread::spawn(move || render_loop(render_rx, main_tx)) };
 
     // Game Loop
     let alternate_screen = AlternateScreen::to_alternate(true).unwrap();
@@ -110,7 +110,7 @@ fn main() {
         world = main_rx.recv().unwrap();
         // Don't exceed ~60/fps
         if let Some(t) = Duration::from_secs_f64(1. / 60.).checked_sub(last_instant.elapsed()) {
-            sleep(t);
+            thread::sleep(t);
         }
     }
 
