@@ -54,6 +54,6 @@ impl Player {
         }
         // Update the sword's position
         self.sword_coord = self.coord.to_the(self.facing);
-        return moved;
+        moved
     }
 }

@@ -9,7 +9,7 @@ pub struct Monster {
     pub move_timer: Timer,
 }
 
-const MONSTER_SYMBOLS: [&'static str; 7] = [
+const MONSTER_SYMBOLS: [&str; 7] = [
     "·",  // U-00b7
     "☨", // U-2628
     "♄", // U-2644
