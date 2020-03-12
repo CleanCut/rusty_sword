@@ -10,6 +10,7 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
 
     // Draw the entire floor - we only have to do this once
     let mut world = world_rx.recv().unwrap();
+    let (rows, cols) = (world.floor.rows as u16, world.floor.cols as u16);
     cursor.goto(0, 0).unwrap();
     {
         let tiles = &world.floor.tiles;
@@ -31,11 +32,9 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
         };
 
         // Redraw any dirty coordinates with floor tiles
-        let dirty_coords = &mut world.dirty_coords;
-        let floor = &world.floor;
-        for coord in dirty_coords.drain(..) {
+        for coord in world.dirty_coords.drain(..) {
             cursor.goto(coord.col, coord.row).unwrap();
-            print!("{}", floor.get_symbol(coord));
+            print!("{}", world.floor.get_symbol(coord));
         }
 
         // Render Player
@@ -53,9 +52,7 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
         }
         // Player Score
         let score_string = format!("Score: {}", player.score);
-        cursor
-            .goto((floor.cols - score_string.len()) as u16, floor.rows as u16)
-            .unwrap();
+        cursor.goto(cols - score_string.len() as u16, rows).unwrap();
         print!("{}", style(score_string).with(Color::Blue));
 
         // Render Monsters
@@ -66,7 +63,7 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
         }
 
         // Game Title
-        cursor.goto(0, floor.rows as u16).unwrap();
+        cursor.goto(0, rows).unwrap();
         print!(
             "{}",
             style("Rusty Sword - Game of Infamy!").with(Color::White)
