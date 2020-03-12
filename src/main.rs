@@ -41,20 +41,18 @@ fn main() {
 
         // Player moves?
         let mut player_moved = false;
-        loop {
-            match reader.next() {
-                Some(event) => match event {
-                    InputEvent::Keyboard(KeyEvent::Char('q'))
-                    | InputEvent::Keyboard(KeyEvent::Esc) => break 'gameloop,
-                    InputEvent::Keyboard(k) => {
-                        if let Some(direction) = key_to_direction(k) {
-                            player_moved =
-                                player.travel(direction, &world.floor, &mut world.dirty_coords);
-                        }
+        while let Some(event) = reader.next() {
+            match event {
+                InputEvent::Keyboard(KeyEvent::Char('q')) | InputEvent::Keyboard(KeyEvent::Esc) => {
+                    break 'gameloop
+                }
+                InputEvent::Keyboard(k) => {
+                    if let Some(direction) = key_to_direction(k) {
+                        player_moved =
+                            player.travel(direction, &world.floor, &mut world.dirty_coords);
                     }
-                    _ => {}
-                },
-                None => break,
+                }
+                _ => {}
             }
         }
 
