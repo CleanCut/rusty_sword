@@ -1,42 +1,30 @@
-use crossbeam::unbounded;
+use crossbeam::bounded;
 use crossterm::{InputEvent, KeyEvent, TerminalInput};
 use rand::distributions::Uniform;
 use rand::prelude::Distribution;
-use rusty_sword::audio::audio_loop;
+use rusty_audio::Audio;
 use rusty_sword::coord::{key_to_direction, Coord};
-use rusty_sword::floor::Floor;
 use rusty_sword::monster::Monster;
-use rusty_sword::player::Player;
 use rusty_sword::render::render_loop;
 use rusty_sword::timer::Timer;
-use std::sync::{Arc, Mutex};
+use rusty_sword::world::World;
 use std::thread::{sleep, spawn};
 use std::time::{Duration, Instant};
 
 fn main() {
-    // To avoid lock contention for this group of objects, we'll follow the rule:
-    // - You must have a lock on floor before trying to lock anything else
-    // - You must unlock all other locks before (or when) floor gets unlocked
-    let floor = Arc::new(Mutex::new(Floor::new(60, 30)));
-    let player = Arc::new(Mutex::new(Player::new(Coord::new(30, 15))));
-    let dirty_coords = Arc::new(Mutex::new(Vec::<Coord>::new()));
-    let monsters = Arc::new(Mutex::new(Vec::<Monster>::new()));
+    let mut audio = Audio::new();
+    audio.add("monster_dies", "clips/monster_dies.wav");
+    audio.add("monster_spawns", "clips/monster_spawns.wav");
+    audio.add("player_dies", "clips/player_dies.wav");
+
+    let mut world = World::new();
 
     // We'll use this to let the render thread know we're done.
-    let (stop_tx, stop_rx) = unbounded::<()>();
+    let (render_tx, render_rx) = bounded::<World>(0);
+    let (main_tx, main_rx) = bounded::<World>(0);
 
     // Render Thread
-    let render_thread = {
-        let floor = floor.clone();
-        let player = player.clone();
-        let dirty_coords = dirty_coords.clone();
-        let monsters = monsters.clone();
-        spawn(move || render_loop(stop_rx, floor, player, dirty_coords, monsters))
-    };
-
-    // Audio Thread
-    let (clip_tx, clip_rx) = unbounded::<&str>();
-    let audio_thread = { spawn(move || audio_loop(clip_rx)) };
+    let render_thread = { spawn(move || render_loop(render_rx, main_tx)) };
 
     // Game Loop
     sleep(Duration::from_millis(100));
@@ -46,54 +34,50 @@ fn main() {
     let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
     'gameloop: loop {
-        sleep(Duration::from_millis(10));
-        // Lock floor first!
-        let floor = floor.lock().unwrap();
-        let mut player = player.lock().unwrap();
-        let mut dirty_coords = dirty_coords.lock().unwrap();
-        let mut monsters = monsters.lock().unwrap();
-
-        let current_instant = Instant::now();
-        let delta = current_instant - last_instant;
+        let delta = last_instant.elapsed();
+        last_instant = Instant::now();
+        let mut player = &mut world.player;
 
         // Player moves?
         let mut player_moved = false;
         loop {
-            if let Some(event) = reader.next() {
-                match event {
+            match reader.next() {
+                Some(event) => match event {
                     InputEvent::Keyboard(KeyEvent::Char('q'))
                     | InputEvent::Keyboard(KeyEvent::Esc) => break 'gameloop,
                     InputEvent::Keyboard(k) => {
                         if let Some(direction) = key_to_direction(k) {
-                            player_moved = player.travel(direction, &floor, &mut dirty_coords);
+                            player_moved =
+                                player.travel(direction, &world.floor, &mut world.dirty_coords);
                         }
                     }
                     _ => {}
-                }
-            } else {
-                break;
+                },
+                None => break,
             }
         }
 
         // Update monster timers
-        for monster in monsters.iter_mut() {
+        for monster in world.monsters.iter_mut() {
             monster.move_timer.update(delta);
         }
 
         // Monsters move?
         if !player_moved {
-            for monster in monsters.iter_mut() {
-                monster.try_travel(player.coord, &mut dirty_coords);
+            for monster in world.monsters.iter_mut() {
+                monster.try_travel(player.coord, &mut world.dirty_coords);
             }
         }
 
         // Did a monster die?
-        let num_monsters = monsters.len();
-        monsters.retain(|monster| monster.coord != player.sword_coord);
-        let num_killed = num_monsters - monsters.len();
+        let num_monsters = world.monsters.len();
+        world
+            .monsters
+            .retain(|monster| monster.coord != player.sword_coord);
+        let num_killed = num_monsters - world.monsters.len();
         if num_killed > 0 {
             player.score += num_killed as u64;
-            clip_tx.send("monster_dies").unwrap();
+            audio.play("monster_dies");
         }
 
         // Spawn a new monster!
@@ -105,27 +89,35 @@ fn main() {
                 Uniform::new(1, 29).sample(&mut rng),
             );
             if to_coord != player.coord {
-                monsters.push(Monster::new(to_coord, &mut rng));
-                clip_tx.send("monster_spawns").unwrap();
+                world.monsters.push(Monster::new(to_coord, &mut rng));
+                audio.play("monster_spawns");
             }
         }
 
         // Did the player die?
-        if monsters.iter().any(|monster| monster.coord == player.coord) {
-            clip_tx.send("player_dies").unwrap();
+        if world
+            .monsters
+            .iter()
+            .any(|monster| monster.coord == player.coord)
+        {
+            audio.play("player_dies");
             break 'gameloop;
         }
 
-        last_instant = current_instant;
+        // Give the whole world to the renderer - we're just having fun with channels, we're not
+        // getting any performance gains since the main and render thread only run when they've got
+        // access to the world
+        render_tx.send(world).unwrap();
+        world = main_rx.recv().unwrap();
+        sleep(Duration::from_millis(10));
     }
 
-    // Game ended
-    //sleep(Duration::from_millis(50));
-    stop_tx.send(()).unwrap();
-    clip_tx.send("stop").unwrap();
-
-    // Wait for other threads to gracefully exit before exiting the main thread
+    // Wait until currently-playing sounds are done
+    audio.wait();
+    // Close the render_tx channel, which will trigger the render thread to exit
+    drop(render_tx);
+    // Wait for the render thread to actually exit
     render_thread.join().unwrap();
+
     println!("Thanks for playing!");
-    audio_thread.join().unwrap();
 }

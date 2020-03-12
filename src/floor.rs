@@ -1,30 +1,26 @@
 use crate::coord::Coord;
 
-#[derive(Copy, Clone)]
-pub struct Tile {
-    pub wall: Option<char>,
-}
-
 pub struct Floor {
     pub rows: usize,
     pub cols: usize,
-    pub tiles: Vec<Vec<Tile>>,
+    pub tiles: Vec<Vec<Option<char>>>,
 }
 
 impl Floor {
     pub fn new(cols: usize, rows: usize) -> Self {
         // Tiles to use
-        let horizontal = Tile { wall: Some('─') }; // U-2500
-        let vertical = Tile { wall: Some('│') }; // U-2502
-        let top_left = Tile { wall: Some('┌') }; // U-250c
-        let top_right = Tile { wall: Some('┐') }; // U-2510
-        let bottom_left = Tile { wall: Some('└') }; // U-2514
-        let bottom_right = Tile { wall: Some('┘') }; // U-2518
-        let blank = Tile { wall: None };
+        let horizontal = Some('─'); // U-2500
+        let vertical = Some('│'); // U-2502
+        let top_left = Some('┌'); // U-250c
+        let top_right = Some('┐'); // U-2510
+        let bottom_left = Some('└'); // U-2514
+        let bottom_right = Some('┘'); // U-2518
+        let blank = None;
 
-        let mut tiles = Vec::<Vec<Tile>>::with_capacity(rows);
+        // Row-major
+        let mut tiles = Vec::<Vec<Option<char>>>::with_capacity(rows);
         for _ in 0..rows {
-            tiles.push(Vec::<Tile>::with_capacity(rows));
+            tiles.push(Vec::<Option<char>>::with_capacity(cols));
         }
         // First row is all wall
         tiles[0].push(top_left);
@@ -48,22 +44,16 @@ impl Floor {
         tiles[rows - 1].push(bottom_right);
 
         // Create the floor
-        Self {
-            rows: rows,
-            cols: cols,
-            tiles: tiles,
-        }
+        Self { rows, cols, tiles }
     }
     pub fn get_symbol(&self, coord: Coord) -> String {
-        if let Some(wall) = self.tiles[coord.row as usize][coord.col as usize].wall {
-            wall.to_string()
+        if let Some(symbol) = self.tiles[coord.row as usize][coord.col as usize] {
+            symbol.to_string()
         } else {
             " ".to_string()
         }
     }
     pub fn is_wall(&self, coord: Coord) -> bool {
-        self.tiles[coord.row as usize][coord.col as usize]
-            .wall
-            .is_some()
+        self.tiles[coord.row as usize][coord.col as usize].is_some()
     }
 }

@@ -1,35 +1,21 @@
-use crate::coord::Coord;
-use crate::floor::Floor;
-use crate::monster::Monster;
-use crate::player::Player;
-use crossbeam::Receiver;
-use crossterm::{style, AlternateScreen, ClearType, Color, Crossterm};
-use std::sync::{Arc, Mutex};
-use std::thread::sleep;
-use std::time::Duration;
+use crate::world::World;
+use crossbeam::{Receiver, Sender};
+use crossterm::{style, AlternateScreen, Color, Crossterm};
 
-pub fn render_loop(
-    stop_rx: Receiver<()>,
-    floor: Arc<Mutex<Floor>>,
-    player: Arc<Mutex<Player>>,
-    dirty_coords: Arc<Mutex<Vec<Coord>>>,
-    monsters: Arc<Mutex<Vec<Monster>>>,
-) {
+pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
     let _alt = AlternateScreen::to_alternate(true).unwrap();
     let crossterm = Crossterm::new();
-    let terminal = crossterm.terminal();
     let cursor = crossterm.cursor();
-
-    terminal.clear(ClearType::All).unwrap();
-
     cursor.hide().unwrap();
-    // Draw the entire floor
+
+    // Draw the entire floor - we only have to do this once
+    let mut world = world_rx.recv().unwrap();
     cursor.goto(0, 0).unwrap();
     {
-        let floor = floor.lock().unwrap();
-        for row in &floor.tiles {
+        let tiles = &world.floor.tiles;
+        for row in tiles {
             for tile in row {
-                if let Some(wall) = tile.wall {
+                if let Some(wall) = tile {
                     print!("{}", wall);
                 } else {
                     print!(" ");
@@ -38,24 +24,26 @@ pub fn render_loop(
             print!("\r\n");
         }
     }
+    main_tx.send(world).unwrap();
 
     loop {
-        sleep(Duration::from_millis(10));
-        if stop_rx.try_recv().is_ok() {
-            break;
-        }
-        // Lock floor first...
-        let floor = floor.lock().unwrap();
+        world = match world_rx.recv() {
+            Ok(w) => w,
+            Err(_) => {
+                break;
+            }
+        };
 
         // Redraw any dirty coordinates with floor tiles
-        let mut dirty_coords = dirty_coords.lock().unwrap();
+        let dirty_coords = &mut world.dirty_coords;
+        let floor = &world.floor;
         for coord in dirty_coords.drain(..) {
             cursor.goto(coord.col, coord.row).unwrap();
             print!("{}", floor.get_symbol(coord));
         }
 
         // Render Player
-        let mut player = player.lock().unwrap();
+        let player = &mut world.player;
         if player.dirty {
             player.dirty = false;
             // Player's sword
@@ -75,7 +63,7 @@ pub fn render_loop(
         print!("{}", style(score_string).with(Color::Blue));
 
         // Render Monsters
-        let monsters = monsters.lock().unwrap();
+        let monsters = &mut world.monsters;
         for monster in monsters.iter() {
             cursor.goto(monster.coord.col, monster.coord.row).unwrap();
             print!("{}", style(&monster.symbol).with(Color::Green));
@@ -87,12 +75,10 @@ pub fn render_loop(
             "{}",
             style("Rusty Sword - Game of Infamy!").with(Color::White)
         );
+        if main_tx.send(world).is_err() {
+            break;
+        }
     }
-
-    // Nice cleanup: Move cursor below the floor, so we can see how we finished
-    {
-        let floor = floor.lock().unwrap();
-        cursor.goto(0, (floor.rows + 2) as u16).unwrap();
-    }
+    // cleanup
     cursor.show().unwrap();
 }

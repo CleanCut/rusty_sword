@@ -1,6 +1,6 @@
 [package]
 name = "rusty_sword"
-version = "0.1.0"
+version = "0.2.0"
 authors = ["Nathan Stocks <nathan.stocks@gmail.com>"]
 edition = "2018"
 
@@ -8,4 +8,4 @@ edition = "2018"
 crossbeam = "0.7.2"
 crossterm = "0.11.1"
 rand = "0.7.2"
-rusty_audio = "1.1.0"
+rusty_audio = "1.1.1"
