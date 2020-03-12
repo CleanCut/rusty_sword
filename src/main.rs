@@ -28,7 +28,6 @@ fn main() {
     let render_thread = { spawn(move || render_loop(render_rx, main_tx)) };
 
     // Game Loop
-    sleep(Duration::from_millis(100));
     let input = TerminalInput::new();
     let mut reader = input.read_async();
     let mut rng = rand::thread_rng();
