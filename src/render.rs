@@ -1,7 +1,7 @@
 use crate::coord::Coord;
 use crate::world::World;
 use crossbeam::{Receiver, Sender};
-use crossterm::{style, AlternateScreen, Color, Crossterm, TerminalCursor};
+use crossterm::{style, Color, Crossterm, TerminalCursor};
 
 trait GotoCoord {
     fn goto_coord(&self, coord: Coord);
@@ -14,7 +14,6 @@ impl GotoCoord for TerminalCursor {
 }
 
 pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
-    let _alt = AlternateScreen::to_alternate(true).unwrap();
     let crossterm = Crossterm::new();
     let cursor = crossterm.cursor();
     cursor.hide().unwrap();

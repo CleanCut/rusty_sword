@@ -1,5 +1,5 @@
 use crossbeam::bounded;
-use crossterm::{InputEvent, KeyEvent, TerminalInput};
+use crossterm::{AlternateScreen, InputEvent, KeyEvent, TerminalInput};
 use rand::distributions::Uniform;
 use rand::prelude::Distribution;
 use rusty_audio::Audio;
@@ -28,6 +28,7 @@ fn main() {
     let render_thread = { spawn(move || render_loop(render_rx, main_tx)) };
 
     // Game Loop
+    let alternate_screen = AlternateScreen::to_alternate(true).unwrap();
     let input = TerminalInput::new();
     let mut reader = input.read_async();
     let mut rng = rand::thread_rng();
@@ -118,5 +119,6 @@ fn main() {
     // Wait for the render thread to actually exit
     render_thread.join().unwrap();
 
+    drop(alternate_screen);
     println!("Thanks for playing!");
 }
