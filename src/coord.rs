@@ -20,12 +20,12 @@ pub fn key_to_direction(key: KeyEvent) -> Option<Direction> {
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub struct Coord {
-    pub row: u16,
-    pub col: u16,
+    pub row: usize,
+    pub col: usize,
 }
 
 impl Coord {
-    pub fn new(row: u16, col: u16) -> Self {
+    pub fn new(row: usize, col: usize) -> Self {
         Self { row, col }
     }
     pub fn to_the(&self, direction: Direction) -> Self {

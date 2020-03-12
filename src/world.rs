@@ -14,7 +14,7 @@ impl World {
     pub fn new(rows: usize, cols: usize) -> Self {
         Self {
             floor: Floor::new(rows, cols),
-            player: Player::new(Coord::new((rows / 2) as u16, (cols / 2) as u16)),
+            player: Player::new(Coord::new(rows / 2, cols / 2)),
             dirty_coords: Vec::<Coord>::new(),
             monsters: Vec::<Monster>::new(),
         }
