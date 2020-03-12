@@ -15,11 +15,7 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
         let tiles = &world.floor.tiles;
         for row in tiles {
             for tile in row {
-                if let Some(wall) = tile {
-                    print!("{}", wall);
-                } else {
-                    print!(" ");
-                }
+                print!("{}", tile);
             }
             print!("\r\n");
         }

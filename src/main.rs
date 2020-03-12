@@ -101,6 +101,7 @@ fn main() {
             .any(|monster| monster.coord == player.coord)
         {
             audio.play("player_dies");
+            audio.wait(); // Wait until the sound finishes, so we can hear it before quitting.
             break 'gameloop;
         }
 
@@ -112,8 +113,6 @@ fn main() {
         sleep(Duration::from_millis(10));
     }
 
-    // Wait until currently-playing sounds are done
-    audio.wait();
     // Close the render_tx channel, which will trigger the render thread to exit
     drop(render_tx);
     // Wait for the render thread to actually exit

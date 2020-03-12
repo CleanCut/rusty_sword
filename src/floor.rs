@@ -3,24 +3,24 @@ use crate::coord::Coord;
 pub struct Floor {
     pub rows: usize,
     pub cols: usize,
-    pub tiles: Vec<Vec<Option<char>>>,
+    pub tiles: Vec<Vec<&'static str>>,
 }
 
 impl Floor {
     pub fn new(cols: usize, rows: usize) -> Self {
         // Tiles to use
-        let horizontal = Some('─'); // U-2500
-        let vertical = Some('│'); // U-2502
-        let top_left = Some('┌'); // U-250c
-        let top_right = Some('┐'); // U-2510
-        let bottom_left = Some('└'); // U-2514
-        let bottom_right = Some('┘'); // U-2518
-        let blank = None;
+        let horizontal = "─"; // U-2500
+        let vertical = "│"; // U-2502
+        let top_left = "┌"; // U-250c
+        let top_right = "┐"; // U-2510
+        let bottom_left = "└"; // U-2514
+        let bottom_right = "┘"; // U-2518
+        let blank = " ";
 
         // Row-major
-        let mut tiles = Vec::<Vec<Option<char>>>::with_capacity(rows);
+        let mut tiles = Vec::<Vec<&'static str>>::with_capacity(rows);
         for _ in 0..rows {
-            tiles.push(Vec::<Option<char>>::with_capacity(cols));
+            tiles.push(Vec::<&'static str>::with_capacity(cols));
         }
         // First row is all wall
         tiles[0].push(top_left);
@@ -46,14 +46,10 @@ impl Floor {
         // Create the floor
         Self { rows, cols, tiles }
     }
-    pub fn get_symbol(&self, coord: Coord) -> String {
-        if let Some(symbol) = self.tiles[coord.row as usize][coord.col as usize] {
-            symbol.to_string()
-        } else {
-            " ".to_string()
-        }
+    pub fn get_symbol(&self, coord: Coord) -> &'static str {
+        self.tiles[coord.row as usize][coord.col as usize]
     }
     pub fn is_wall(&self, coord: Coord) -> bool {
-        self.tiles[coord.row as usize][coord.col as usize].is_some()
+        self.tiles[coord.row as usize][coord.col as usize] != " "
     }
 }
