@@ -1,7 +1,6 @@
 use crossbeam::bounded;
 use crossterm::{AlternateScreen, InputEvent, KeyEvent, TerminalInput};
-use rand::distributions::Uniform;
-use rand::prelude::Distribution;
+use rand::distributions::{Distribution, Uniform};
 use rusty_audio::Audio;
 use rusty_sword::coord::{key_to_direction, Coord};
 use rusty_sword::monster::Monster;
