@@ -82,12 +82,12 @@ fn main() {
         spawn_timer.update(delta);
         if spawn_timer.ready {
             spawn_timer = Timer::from_millis(Uniform::new(1000, 5000).sample(&mut rng));
-            let to_coord = Coord::new(
+            let spawn_coord = Coord::new(
                 Uniform::new(1, world.floor.rows).sample(&mut rng),
                 Uniform::new(1, world.floor.cols).sample(&mut rng),
             );
-            if to_coord != player.coord {
-                world.monsters.push(Monster::new(to_coord, &mut rng));
+            if spawn_coord != player.coord {
+                world.monsters.push(Monster::new(spawn_coord, &mut rng));
                 audio.play("monster_spawns");
             }
         }

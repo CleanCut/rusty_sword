@@ -47,9 +47,9 @@ impl Floor {
         Self { rows, cols, tiles }
     }
     pub fn get_symbol(&self, coord: Coord) -> &'static str {
-        self.tiles[coord.row as usize][coord.col as usize]
+        self.tiles[coord.row][coord.col]
     }
     pub fn is_wall(&self, coord: Coord) -> bool {
-        self.tiles[coord.row as usize][coord.col as usize] != " "
+        self.tiles[coord.row][coord.col] != " "
     }
 }
