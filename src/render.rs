@@ -1,27 +1,25 @@
 use crate::coord::Coord;
 use crate::world::World;
 use crossbeam::{Receiver, Sender};
-use crossterm::{style, Color, Crossterm, TerminalCursor};
+use crossterm::cursor::{Hide, MoveTo, Show};
+use crossterm::style::{style, Color};
+use crossterm::ExecutableCommand;
+use std::io::{self, Stdout};
 
-trait GotoCoord {
-    fn goto_coord(&self, coord: Coord);
-}
-
-impl GotoCoord for TerminalCursor {
-    fn goto_coord(&self, coord: Coord) {
-        self.goto(coord.col as u16, coord.row as u16).unwrap();
-    }
+fn goto_coord(stdout: &mut Stdout, coord: Coord) {
+    stdout
+        .execute(MoveTo(coord.col as u16, coord.row as u16))
+        .unwrap();
 }
 
 pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
-    let crossterm = Crossterm::new();
-    let cursor = crossterm.cursor();
-    cursor.hide().unwrap();
+    let stdout = &mut io::stdout();
+    stdout.execute(Hide).unwrap();
 
     // Draw the entire floor - we only have to do this once
     let mut world = world_rx.recv().unwrap();
     let game_title_coord = Coord::new(world.floor.rows, 0);
-    cursor.goto_coord(Coord::new(0, 0));
+    goto_coord(stdout, Coord::new(0, 0));
     {
         let tiles = &world.floor.tiles;
         for row in tiles {
@@ -43,7 +41,7 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
 
         // Redraw any dirty coordinates with floor tiles
         for coord in world.dirty_coords.drain(..) {
-            cursor.goto_coord(coord);
+            goto_coord(stdout, coord);
             print!("{}", world.floor.get_symbol(coord));
         }
 
@@ -52,29 +50,29 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
         if player.dirty {
             player.dirty = false;
             // Player's sword
-            cursor.goto_coord(player.sword_coord);
+            goto_coord(stdout, player.sword_coord);
             print!("{}", style(player.sword_symbol()).with(Color::Red));
             // Player himself
-            cursor.goto_coord(player.coord);
+            goto_coord(stdout, player.coord);
             print!("{}", style(&player.symbol).with(Color::Blue));
         }
         // Player Score
         let score_string = format!("Score: {}", player.score);
-        cursor.goto_coord(Coord::new(
-            world.floor.rows,
-            world.floor.cols - score_string.len(),
-        ));
+        goto_coord(
+            stdout,
+            Coord::new(world.floor.rows, world.floor.cols - score_string.len()),
+        );
         print!("{}", style(score_string).with(Color::Blue));
 
         // Render Monsters
         let monsters = &mut world.monsters;
         for monster in monsters.iter() {
-            cursor.goto_coord(monster.coord);
+            goto_coord(stdout, monster.coord);
             print!("{}", style(&monster.symbol).with(Color::Green));
         }
 
         // Game Title
-        cursor.goto_coord(game_title_coord);
+        goto_coord(stdout, game_title_coord);
         print!(
             "{}",
             style("Rusty Sword - Game of Infamy!").with(Color::White)
@@ -84,5 +82,5 @@ pub fn render_loop(world_rx: Receiver<World>, main_tx: Sender<World>) {
         }
     }
     // cleanup
-    cursor.show().unwrap();
+    stdout.execute(Show).unwrap();
 }

@@ -1,5 +1,7 @@
 use crossbeam::bounded;
-use crossterm::{AlternateScreen, InputEvent, KeyEvent, TerminalInput};
+use crossterm::event::{self, Event, KeyCode};
+use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
+use crossterm::ExecutableCommand;
 use rand::distributions::{Distribution, Uniform};
 use rusty_audio::Audio;
 use rusty_sword::coord::{key_to_direction, Coord};
@@ -7,6 +9,7 @@ use rusty_sword::monster::Monster;
 use rusty_sword::render::render_loop;
 use rusty_sword::timer::Timer;
 use rusty_sword::world::World;
+use std::io;
 use std::thread;
 use std::time::{Duration, Instant};
 
@@ -27,9 +30,9 @@ fn main() {
     let render_thread = { thread::spawn(move || render_loop(render_rx, main_tx)) };
 
     // Game Loop
-    let alternate_screen = AlternateScreen::to_alternate(true).unwrap();
-    let input = TerminalInput::new();
-    let mut reader = input.read_async();
+    let mut stdout = io::stdout();
+    terminal::enable_raw_mode().unwrap();
+    stdout.execute(EnterAlternateScreen).unwrap();
     let mut rng = rand::thread_rng();
     let mut spawn_timer = Timer::from_millis(1000);
     let mut last_instant = Instant::now();
@@ -40,18 +43,15 @@ fn main() {
 
         // Player moves?
         let mut player_moved = false;
-        while let Some(event) = reader.next() {
-            match event {
-                InputEvent::Keyboard(KeyEvent::Char('q')) | InputEvent::Keyboard(KeyEvent::Esc) => {
-                    break 'gameloop
+        while event::poll(Duration::default()).unwrap() {
+            let an_event = event::read().unwrap();
+            if let Event::Key(key_event) = an_event {
+                if (key_event.code == KeyCode::Char('q')) | (key_event.code == KeyCode::Esc) {
+                    break 'gameloop;
                 }
-                InputEvent::Keyboard(k) => {
-                    if let Some(direction) = key_to_direction(k) {
-                        player_moved =
-                            player.travel(direction, &world.floor, &mut world.dirty_coords);
-                    }
+                if let Some(direction) = key_to_direction(key_event) {
+                    player_moved = player.travel(direction, &world.floor, &mut world.dirty_coords);
                 }
-                _ => {}
             }
         }
 
@@ -118,6 +118,7 @@ fn main() {
     // Wait for the render thread to actually exit
     render_thread.join().unwrap();
 
-    drop(alternate_screen);
+    stdout.execute(LeaveAlternateScreen).unwrap();
+    terminal::disable_raw_mode().unwrap();
     println!("Thanks for playing!");
 }

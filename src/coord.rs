@@ -1,4 +1,4 @@
-use crossterm::KeyEvent;
+use crossterm::event::{KeyCode, KeyEvent};
 
 #[derive(Copy, Clone, Debug, PartialEq, Eq)]
 pub enum Direction {
@@ -8,12 +8,12 @@ pub enum Direction {
     Right,
 }
 
-pub fn key_to_direction(key: KeyEvent) -> Option<Direction> {
-    match key {
-        KeyEvent::Char('w') | KeyEvent::Up | KeyEvent::Char(',') => Some(Direction::Up),
-        KeyEvent::Char('s') | KeyEvent::Down | KeyEvent::Char('o') => Some(Direction::Down),
-        KeyEvent::Char('a') | KeyEvent::Left => Some(Direction::Left),
-        KeyEvent::Char('d') | KeyEvent::Right | KeyEvent::Char('e') => Some(Direction::Right),
+pub fn key_to_direction(event: KeyEvent) -> Option<Direction> {
+    match event.code {
+        KeyCode::Char('w') | KeyCode::Up | KeyCode::Char(',') => Some(Direction::Up),
+        KeyCode::Char('s') | KeyCode::Down | KeyCode::Char('o') => Some(Direction::Down),
+        KeyCode::Char('a') | KeyCode::Left => Some(Direction::Left),
+        KeyCode::Char('d') | KeyCode::Right | KeyCode::Char('e') => Some(Direction::Right),
         _ => None,
     }
 }
