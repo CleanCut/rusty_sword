@@ -1,3 +1,10 @@
+# 0.3.0
+## 2022-06-07
+
+- Update all library dependencies
+- The `crossbeam` upgrade requires changing `use` paths in `main.rs` and `render.rs` (from `crossbeam::...` to `crossbeam::channel::...`)
+- The `crossterm` upgrade requires adding a `use` statement to bring `crossterm::style::Stylize` into scope in `render.rs`
+
 # 0.2.0
 ## 2020-03-13
 

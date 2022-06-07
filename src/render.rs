@@ -2,7 +2,7 @@ use crate::coord::Coord;
 use crate::world::World;
 use crossbeam::channel::{Receiver, Sender};
 use crossterm::cursor::{Hide, MoveTo, Show};
-use crossterm::style::{style, Color};
+use crossterm::style::{style, Color, Stylize};
 use crossterm::ExecutableCommand;
 use std::io::{self, Stdout};
 
