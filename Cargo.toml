@@ -1,11 +1,11 @@
 [package]
 name = "rusty_sword"
 version = "0.2.0"
-authors = ["Nathan Stocks <nathan.stocks@gmail.com>"]
+authors = [ "Nathan Stocks <nathan.stocks@gmail.com>" ]
 edition = "2018"
 
 [dependencies]
-crossbeam = "0.7.3"
+crossbeam = "0.8.1"
 crossterm = "0.16.0"
-rand = "0.7.3"
+rand = "0.8.5"
 rusty_audio = "1.1.1"

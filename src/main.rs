@@ -1,4 +1,4 @@
-use crossbeam::bounded;
+use crossbeam::channel::bounded;
 use crossterm::event::{self, Event, KeyCode};
 use crossterm::terminal::{self, EnterAlternateScreen, LeaveAlternateScreen};
 use crossterm::ExecutableCommand;

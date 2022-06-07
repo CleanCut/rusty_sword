@@ -1,6 +1,6 @@
 use crate::coord::Coord;
 use crate::world::World;
-use crossbeam::{Receiver, Sender};
+use crossbeam::channel::{Receiver, Sender};
 use crossterm::cursor::{Hide, MoveTo, Show};
 use crossterm::style::{style, Color};
 use crossterm::ExecutableCommand;
